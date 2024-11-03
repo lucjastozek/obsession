@@ -47,6 +47,7 @@
  * @property {HTMLElement} headings
  * @property {HTMLElement} sentencesContainer
  * @property {HTMLElement} randomWordsContainer
+ * @property {HTMLElement} background
  * @property {number} angle
  * @property {Word} initialWord
  * @property {string} fontSettings
@@ -73,6 +74,7 @@ const settings = Object.freeze({
   headingsContainer: document.querySelector("#headings-container"),
   sentencesContainer: document.querySelector("#sentences-container"),
   randomWordsContainer: document.querySelector("#random-words-container"),
+  background: document.querySelector("#background"),
   angle: Math.atan(window.innerHeight / window.innerWidth),
   maxWidth: Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2),
   initialWord: [
@@ -191,11 +193,22 @@ function useRandomWords() {
   }
 }
 
+function useBackgroundWords() {
+  const { words } = state;
+  const { background } = settings;
+
+  for (const word of words) {
+    const text = word.map((char) => char.letter).join("");
+    background.append(text + " ");
+  }
+}
+
 /**
  * This is where we put the code that outputs our data.
  * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
  */
 function use() {
+  useBackgroundWords();
   useHeading();
 
   const { sentences } = state;

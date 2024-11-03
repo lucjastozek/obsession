@@ -21,7 +21,16 @@ body {
   color: yellow;
   overflow-y: hidden;
   text-align: left;
-  z-index: -2;
+}
+
+#background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  color: #ffffff;
+  z-index: 1;
+  font-size: 1rem;
+  opacity: 0.1;
 }
 
 #heading {
@@ -50,6 +59,7 @@ body {
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 2;
 }
 
 .sentence {
@@ -60,7 +70,7 @@ body {
   color: #050505;
   margin: 2rem;
   width: fit-content;
-  z-index: 0;
+  z-index: 2;
   top: 0;
   left: 0;
 }
@@ -71,20 +81,5 @@ body {
   left: 0;
   color: #ffffff;
   font-size: 1.5rem;
+  z-index: 3;
 }
-
-/* Inline Skeleton - prostokątny szkielet "SKLA" 100, */
-/* Stripes - poprzerywane [?] "SKLD" 100, */
-/* Flared - szeryfy, im większe tym ostrzejsze "TRMB" 100, */
-/* Sheared - poobcinane rogi "TRMD" 100, */
-/* Bifurcated - rozpadające się "TRME" 100, */
-/* Inline Terminal - prostokątne dziury w środku "TRMK" 100; */
-
-/* Inline "BLDA" 100, */
-/* Open Inline Terminal - krzyże na przecięciach "TRMF" 100, */
-/* Rounded Slab "TRMC" 100, */
-/* Rounded "TRMA" 100, */
-/* Slab "TRMG" 100, */
-/* Worm "BLDB" 100, */
-/* Worm Skeleton "SKLB" 100, */
-/* Worm Terminal "TRML" 100; */
