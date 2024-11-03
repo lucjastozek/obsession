@@ -54,7 +54,7 @@
  */
 let state = Object.freeze({
   words: [],
-  fontSize: 200,
+  fontSize: 160,
 });
 
 /**
@@ -117,12 +117,63 @@ function useHeading() {
   heading.style.fontSize = `${fontSize}px`;
 }
 
+function useArticleFragment() {
+  const { words } = state;
+  const existingWordElements = document.querySelectorAll(".word");
+  let lastPrintedChar;
+  const lastWord = words[words.length - 1];
+  const lastChar = lastWord[lastWord.length - 1].letter;
+
+  if (existingWordElements.length > 0) {
+    lastPrintedChar =
+      existingWordElements[existingWordElements.length - 1].textContent;
+  }
+
+  if (
+    existingWordElements.length ===
+      words.filter((word) => word[0].letter !== "").length - 1 &&
+    lastPrintedChar === lastChar
+  ) {
+    return;
+  }
+
+  if (words[words.length - 1][0].letter === "") {
+    return;
+  }
+
+  const articleElement = document.createElement("p");
+  articleElement.classList.add("article");
+
+  for (const word of words.slice(1)) {
+    const wordElement = document.createElement("span");
+    wordElement.classList.add("word");
+
+    for (const char of word) {
+      const charElement = document.createElement("span");
+
+      charElement.innerText = char.letter;
+
+      charElement.style.fontVariationSettings = `'wght' ${char.weight}, 'yopq' ${char.thinStroke}`;
+
+      wordElement.append(charElement);
+    }
+
+    wordElement.append(" ");
+    articleElement.append(wordElement);
+  }
+
+  const container = document.querySelector("#paragraph-container");
+
+  container.replaceChildren(articleElement);
+}
+
 /**
  * This is where we put the code that outputs our data.
  * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
  */
 function use() {
   useHeading();
+  useArticleFragment();
 
   window.requestAnimationFrame(use);
 }
