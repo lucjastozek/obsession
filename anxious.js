@@ -16,7 +16,9 @@
  * You might want to look at the Assignment examples for more elaborate starting points.
  *
  */
+
 // The state should contain all the "moving" parts of your program, values that change.
+
 /**
  * @typedef {Object} Character
  * @property {string} letter
@@ -25,15 +27,18 @@
  * @property {number} thinStroke
  * @property {number} rotation
  */
+
 /**
  * @typedef {Array.<Character>} Word
  */
+
 /**
  * @typedef {Object} State
  * @property {Array.<Word>} words
  * @property {number} fontSize
  * @property {number} maxWidth
  */
+
 /**
  * @typedef {Object} Settings
  * @property {HTMLElement} heading
@@ -41,6 +46,7 @@
  * @property {Word} initialWord
  * @property {string} fontSettings
  */
+
 /**
  * Initial state with default values for the candle position, smoke traces,
  * flame intensity, and latest user activity time.
@@ -50,6 +56,7 @@ let state = Object.freeze({
   words: [],
   fontSize: 200,
 });
+
 /**
  * Fixed settings for HTML elements and styling of the candle, flame,
  * candle body, smoke trace, and hidden text. These remain constant.
@@ -71,6 +78,7 @@ const settings = Object.freeze({
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
 });
+
 /**
  * Update the state object with the properties included in `newState`.
  * @param {Object} newState An object with the properties to update in the state object.
@@ -78,6 +86,7 @@ const settings = Object.freeze({
 function updateState(newState) {
   state = Object.freeze(Object.assign(Object.assign({}, state), newState));
 }
+
 /**
  * This is where we put the code that transforms our data.
  * update() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
@@ -87,6 +96,7 @@ function update() {
 
   window.requestAnimationFrame(update);
 }
+
 function useHeading() {
   const { heading, fontSettings } = settings;
   const { words, fontSize } = state;
@@ -106,6 +116,7 @@ function useHeading() {
 
   heading.style.fontSize = `${fontSize}px`;
 }
+
 /**
  * This is where we put the code that outputs our data.
  * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
@@ -115,6 +126,7 @@ function use() {
 
   window.requestAnimationFrame(use);
 }
+
 function updateHeadingFontSize() {
   const { heading, maxWidth } = settings;
   const { fontSize } = state;
@@ -123,6 +135,7 @@ function updateHeadingFontSize() {
     updateState({ fontSize: fontSize - 1 });
   }
 }
+
 /**
  * Adds character to the newest word or creates a new word
  * @param {KeyboardEvent} e
@@ -136,7 +149,12 @@ function updateWords(e) {
   } else if (/^[a-zA-Z?!,.;:]$/.test(e.key)) {
     // update the newest word
     const wordsCopy = [...words];
-    const newestWord = wordsCopy[wordsCopy.length - 1];
+    let newestWord = wordsCopy[wordsCopy.length - 1];
+
+    // reset array if it's an initial word
+    if (newestWord[0].letter === "") {
+      newestWord = [];
+    }
 
     newestWord.push({
       letter: e.key,
@@ -149,6 +167,7 @@ function updateWords(e) {
     updateState({ words: [...words.slice(0, -1), newestWord] });
   }
 }
+
 /**
  * Setup is run once, at the start of the program. It sets everything up for us!
  */
