@@ -27,7 +27,7 @@ body {
 #heading {
   margin: 0;
   display: inline;
-  font-size: 400px;
+  font-size: 200px;
   white-space: nowrap;
 }
 
@@ -43,6 +43,7 @@ body {
   display: inline-block;
   transform-origin: center;
   margin: 0.1em;
+  margin-top: -0.4em;
 }
 
 /* Inline Skeleton - prostokątny szkielet "SKLA" 100, */

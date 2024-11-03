@@ -48,7 +48,7 @@
  */
 let state = Object.freeze({
   words: [],
-  fontSize: 400,
+  fontSize: 200,
 });
 /**
  * Fixed settings for HTML elements and styling of the candle, flame,
@@ -140,7 +140,7 @@ function updateWords(e) {
 
     newestWord.push({
       letter: e.key,
-      opacity: Math.random() * 0.5 + 0.4,
+      opacity: Math.random() * 0.3 + 0.6,
       weight: Math.round(Math.random() * 400 + 600),
       thinStroke: Math.round(Math.random() * 110 + 25),
       rotation: Math.round(Math.random() * 20 - 10),
