@@ -26,6 +26,7 @@
  * @property {number} weight
  * @property {number} thinStroke
  * @property {number} rotation
+ * @property {number} seed
  */
 
 /**
@@ -79,6 +80,7 @@ const settings = Object.freeze({
       weight: 400,
       thinStroke: 100,
       rotation: 0,
+      seed: 1,
     },
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
@@ -130,6 +132,17 @@ function useSentence(sentence) {
 
   const sentenceElement = document.createElement("p");
   sentenceElement.classList.add("sentence");
+
+  let sentenceSeed = 1;
+
+  if (sentence[0] !== undefined) {
+    sentenceSeed = sentence[0][0].seed;
+  }
+
+  const x = Math.round(sentenceSeed) % (window.innerWidth - 50);
+  const y = Math.round(sentenceSeed) % (window.innerHeight - 50);
+
+  sentenceElement.style.transform = `translate(${x}px, ${y}px)`;
 
   for (const word of sentence) {
     const wordElement = document.createElement("span");
@@ -208,6 +221,7 @@ function updateWords(e) {
       weight: Math.round(Math.random() * 400 + 600),
       thinStroke: Math.round(Math.random() * 110 + 25),
       rotation: Math.round(Math.random() * 20 - 10),
+      seed: Math.random() * 272727,
     });
 
     updateState({ words: [...words.slice(0, -1), newestWord] });

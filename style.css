@@ -46,13 +46,23 @@ body {
   margin-top: -0.4em;
 }
 
+#sentences-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
 .sentence {
+  position: fixed;
   font-size: 1.5rem;
-  max-width: 30rem;
+  max-width: 480px;
   background-color: #ffffff;
   color: #050505;
   margin: 2rem;
   width: fit-content;
+  z-index: 0;
+  top: 0;
+  left: 0;
 }
 
 /* Inline Skeleton - prostokątny szkielet "SKLA" 100, */
