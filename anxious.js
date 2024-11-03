@@ -35,6 +35,7 @@
 /**
  * @typedef {Object} State
  * @property {Array.<Word>} words
+ * @property {Array<Array.<Word>>} sentences
  * @property {number} fontSize
  * @property {number} maxWidth
  */
@@ -42,6 +43,8 @@
 /**
  * @typedef {Object} Settings
  * @property {HTMLElement} heading
+ * @property {HTMLElement} headings
+ * @property {HTMLElement} sentencesContainer
  * @property {number} angle
  * @property {Word} initialWord
  * @property {string} fontSettings
@@ -54,6 +57,7 @@
  */
 let state = Object.freeze({
   words: [],
+  sentences: [],
   fontSize: 160,
 });
 
@@ -65,6 +69,7 @@ let state = Object.freeze({
 const settings = Object.freeze({
   heading: document.querySelector("#heading"),
   headingsContainer: document.querySelector("#headings-container"),
+  sentencesContainer: document.querySelector("#sentences-container"),
   angle: Math.atan(window.innerHeight / window.innerWidth),
   maxWidth: Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2),
   initialWord: [
@@ -117,33 +122,16 @@ function useHeading() {
   heading.style.fontSize = `${fontSize}px`;
 }
 
-function useArticleFragment() {
-  const { words } = state;
-  const existingWordElements = document.querySelectorAll(".word");
-  let lastPrintedWord;
-  const lastWord = words[words.length - 1].map((i) => i.letter).join("") + " ";
+/**
+ * @param {Array<Word>} sentence
+ */
+function useSentence(sentence) {
+  const { sentencesContainer } = settings;
 
-  if (existingWordElements.length > 0) {
-    lastPrintedWord =
-      existingWordElements[existingWordElements.length - 1].textContent;
-  }
+  const sentenceElement = document.createElement("p");
+  sentenceElement.classList.add("sentence");
 
-  if (
-    existingWordElements.length ===
-      words.filter((word) => word[0].letter !== "").length - 1 &&
-    lastPrintedWord === lastWord
-  ) {
-    return;
-  }
-
-  if (words[words.length - 1][0].letter === "") {
-    return;
-  }
-
-  const articleElement = document.createElement("p");
-  articleElement.classList.add("article");
-
-  for (const word of words.slice(1)) {
+  for (const word of sentence) {
     const wordElement = document.createElement("span");
     wordElement.classList.add("word");
 
@@ -158,12 +146,10 @@ function useArticleFragment() {
     }
 
     wordElement.append(" ");
-    articleElement.append(wordElement);
+    sentenceElement.append(wordElement);
   }
 
-  const container = document.querySelector("#paragraph-container");
-
-  container.replaceChildren(articleElement);
+  sentencesContainer.appendChild(sentenceElement);
 }
 
 /**
@@ -172,7 +158,17 @@ function useArticleFragment() {
  */
 function use() {
   useHeading();
-  useArticleFragment();
+
+  const { sentences } = state;
+  const { sentencesContainer } = settings;
+
+  const sentencesElements = document.querySelectorAll(".sentence");
+
+  for (const element of sentencesElements) {
+    sentencesContainer.removeChild(element);
+  }
+
+  sentences.forEach(useSentence);
 
   window.requestAnimationFrame(use);
 }
@@ -218,6 +214,24 @@ function updateWords(e) {
   }
 }
 
+function updateSentences() {
+  const { words } = state;
+  let newSentences = [];
+
+  newSentences.push([]);
+  for (const word of words.slice(1)) {
+    newSentences[newSentences.length - 1].push(word);
+
+    if (/[.!?]/.test(word[word.length - 1].letter)) {
+      newSentences.push([]);
+    }
+  }
+
+  updateState({
+    sentences: newSentences,
+  });
+}
+
 /**
  * Setup is run once, at the start of the program. It sets everything up for us!
  */
@@ -230,6 +244,7 @@ function setup() {
   headingsContainer.style.width = maxWidth;
   document.addEventListener("keydown", function (event) {
     updateWords(event);
+    updateSentences();
   });
   document.addEventListener("keyup", function (event) {});
   update();
