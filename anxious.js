@@ -120,19 +120,18 @@ function useHeading() {
 function useArticleFragment() {
   const { words } = state;
   const existingWordElements = document.querySelectorAll(".word");
-  let lastPrintedChar;
-  const lastWord = words[words.length - 1];
-  const lastChar = lastWord[lastWord.length - 1].letter;
+  let lastPrintedWord;
+  const lastWord = words[words.length - 1].map((i) => i.letter).join("") + " ";
 
   if (existingWordElements.length > 0) {
-    lastPrintedChar =
+    lastPrintedWord =
       existingWordElements[existingWordElements.length - 1].textContent;
   }
 
   if (
     existingWordElements.length ===
       words.filter((word) => word[0].letter !== "").length - 1 &&
-    lastPrintedChar === lastChar
+    lastPrintedWord === lastWord
   ) {
     return;
   }
