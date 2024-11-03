@@ -46,6 +46,7 @@
  * @property {HTMLElement} heading
  * @property {HTMLElement} headings
  * @property {HTMLElement} sentencesContainer
+ * @property {HTMLElement} randomWordsContainer
  * @property {number} angle
  * @property {Word} initialWord
  * @property {string} fontSettings
@@ -71,6 +72,7 @@ const settings = Object.freeze({
   heading: document.querySelector("#heading"),
   headingsContainer: document.querySelector("#headings-container"),
   sentencesContainer: document.querySelector("#sentences-container"),
+  randomWordsContainer: document.querySelector("#random-words-container"),
   angle: Math.atan(window.innerHeight / window.innerWidth),
   maxWidth: Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2),
   initialWord: [
@@ -165,6 +167,30 @@ function useSentence(sentence) {
   sentencesContainer.appendChild(sentenceElement);
 }
 
+function pickRandomWord() {
+  const { words } = state;
+
+  return words[Math.floor(Math.random() * words.length)];
+}
+
+function useRandomWords() {
+  const { randomWordsContainer } = settings;
+  const { words } = state;
+  const existingRandomWords = document.querySelectorAll(".random-word");
+
+  for (let i = 0; i <= words.length / 10 - existingRandomWords.length; i++) {
+    const wordElement = document.createElement("span");
+
+    const word = pickRandomWord();
+
+    wordElement.classList.add("random-word");
+    wordElement.innerHTML = word.map((char) => char.letter).join("");
+    wordElement.style.transform = `translate(${Math.random() * window.innerWidth}px, ${Math.random() * window.innerHeight}px)`;
+
+    randomWordsContainer.appendChild(wordElement);
+  }
+}
+
 /**
  * This is where we put the code that outputs our data.
  * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
@@ -182,6 +208,8 @@ function use() {
   }
 
   sentences.forEach(useSentence);
+
+  useRandomWords();
 
   window.requestAnimationFrame(use);
 }

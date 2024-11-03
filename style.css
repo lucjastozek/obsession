@@ -65,6 +65,14 @@ body {
   left: 0;
 }
 
+.random-word {
+  position: fixed;
+  top: 0;
+  left: 0;
+  color: #ffffff;
+  font-size: 1.5rem;
+}
+
 /* Inline Skeleton - prostokątny szkielet "SKLA" 100, */
 /* Stripes - poprzerywane [?] "SKLD" 100, */
 /* Flared - szeryfy, im większe tym ostrzejsze "TRMB" 100, */
