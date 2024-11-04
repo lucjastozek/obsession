@@ -23,7 +23,9 @@
  * @typedef {Object} Character
  * @property {string} letter
  * @property {number} opacity
- * @property {number} weight
+ * @property {number} headingWeight
+ * @property {number} sentenceWeight
+ * @property {number} wordWeight
  * @property {number} thinStroke
  * @property {number} rotation
  * @property {number} seed
@@ -40,6 +42,9 @@
  * @property {number} fontSize
  * @property {number} maxWidth
  * @property {number} latestActivity
+ * @property {number} startTime
+ * @property {number} charCounter
+ * @property {number} charsPerSecond
  */
 
 /**
@@ -64,6 +69,9 @@ let state = Object.freeze({
   sentences: [],
   fontSize: 160,
   latestActivity: Date.now(),
+  startTime: Date.now(),
+  charCounter: 0,
+  charsPerSecond: 0,
 });
 
 /**
@@ -83,7 +91,9 @@ const settings = Object.freeze({
     {
       letter: "",
       opacity: 0,
-      weight: 400,
+      headingWeight: 400,
+      sentenceWeight: 400,
+      wordWeight: 400,
       thinStroke: 100,
       rotation: 0,
       seed: 1,
@@ -100,12 +110,23 @@ function updateState(newState) {
   state = Object.freeze(Object.assign(Object.assign({}, state), newState));
 }
 
+function updateCharsPerSecond() {
+  const { startTime, charCounter } = state;
+
+  const timeElapsed = (Date.now() - startTime) / 1000;
+
+  updateState({
+    charsPerSecond: charCounter / timeElapsed,
+  });
+}
+
 /**
  * This is where we put the code that transforms our data.
  * update() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
  */
 function update() {
   updateHeadingFontSize();
+  updateCharsPerSecond();
 
   window.requestAnimationFrame(update);
 }
@@ -121,7 +142,7 @@ function useHeading() {
     const character = document.createElement("span");
     character.classList.add("character");
     character.style.opacity = char.opacity;
-    character.style.fontVariationSettings = `'wght' ${char.weight}, 'yopq' ${char.thinStroke}, ${fontSettings}`;
+    character.style.fontVariationSettings = `'wght' ${char.headingWeight}, 'yopq' ${char.thinStroke}, ${fontSettings}`;
     character.innerHTML = char.letter;
     character.style.transform = `rotate(${char.rotation}deg)`;
     heading.appendChild(character);
@@ -159,7 +180,7 @@ function useSentence(sentence) {
 
       charElement.innerText = char.letter;
 
-      charElement.style.fontVariationSettings = `'wght' ${char.weight}, 'yopq' ${char.thinStroke}`;
+      charElement.style.fontVariationSettings = `'wght' ${char.sentenceWeight}, 'yopq' ${char.thinStroke}`;
 
       wordElement.append(charElement);
     }
@@ -188,7 +209,15 @@ function useRandomWords() {
     const word = pickRandomWord();
 
     wordElement.classList.add("random-word");
-    wordElement.innerHTML = word.map((char) => char.letter).join("");
+
+    for (const char of word) {
+      const charElement = document.createElement("span");
+      charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}`;
+      charElement.classList.add("random-word-char");
+      charElement.innerText = char.letter;
+
+      wordElement.appendChild(charElement);
+    }
     wordElement.style.transform = `translate(${Math.random() * window.innerWidth}px, ${Math.random() * window.innerHeight}px)`;
 
     randomWordsContainer.appendChild(wordElement);
@@ -246,11 +275,46 @@ function updateHeadingFontSize() {
 }
 
 /**
+ * Return `num` normalized to 0..1 in range min..max.
+ * @param {number} num
+ * @param {number} min
+ * @param {number} max
+ * @returns number
+ */
+function scale(num, min, max) {
+  if (num < min) return 0;
+  if (num > max) return 1;
+  return (num - min) / (max - min);
+}
+
+/**
+ * Re-maps a number from one range to another.
+ * @param {number} num
+ * @param {number} minNum
+ * @param {number} maxNum
+ * @param {number} minOutput
+ * @param {number} maxOutput
+ * @returns number
+ */
+function map(num, minNum, maxNum, minOutput, maxOutput) {
+  const range = maxOutput - minOutput;
+
+  return scale(num, minNum, maxNum) * range + minOutput;
+}
+
+function getWeight(minWeight, maxWeight) {
+  const { latestActivity } = state;
+  const timeElapsed = (Date.now() - latestActivity) / 1000;
+
+  return minWeight + maxWeight - map(timeElapsed, 0, 1, minWeight, maxWeight);
+}
+
+/**
  * Adds character to the newest word or creates a new word
  * @param {KeyboardEvent} e
  */
 function updateWords(e) {
-  const { words } = state;
+  const { words, charCounter } = state;
   const { initialWord } = settings;
   if (/^(Enter|Tab| )$/.test(e.key)) {
     // create a new, empty word
@@ -268,13 +332,18 @@ function updateWords(e) {
     newestWord.push({
       letter: e.key,
       opacity: Math.random() * 0.3 + 0.6,
-      weight: Math.round(Math.random() * 400 + 600),
+      headingWeight: getWeight(800, 1000),
+      sentenceWeight: getWeight(400, 600),
+      wordWeight: getWeight(100, 300),
       thinStroke: Math.round(Math.random() * 110 + 25),
       rotation: Math.round(Math.random() * 20 - 10),
       seed: Math.random() * 272727,
     });
 
-    updateState({ words: [...words.slice(0, -1), newestWord] });
+    updateState({
+      words: [...words.slice(0, -1), newestWord],
+      charCounter: charCounter + 1,
+    });
   }
 }
 
@@ -313,6 +382,7 @@ function setup() {
     updateWords(event);
     updateSentences();
   });
+
   document.addEventListener("keyup", function (event) {
     updateState({
       latestActivity: Date.now(),
