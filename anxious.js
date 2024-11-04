@@ -104,7 +104,7 @@ const settings = Object.freeze({
     },
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
-  maxFidgetingDifference: 700,
+  maxFidgetingDifference: 200,
 });
 
 /**
@@ -318,6 +318,8 @@ function use() {
   const { sentences, heartRate } = state;
   const { sentencesContainer } = settings;
 
+  console.log(heartRate);
+
   if (heartRate > 130) {
     shake();
   }
@@ -341,16 +343,26 @@ function isFidgeting() {
   const { maxFidgetingDifference } = settings;
   const { keyPressesHistory } = state;
 
-  const lastPresses = keyPressesHistory.slice(-4);
-  const differences = [];
+  const lastPresses = keyPressesHistory.slice(-5);
+  const times = [];
 
   for (let i = 1; i < lastPresses.length; i++) {
-    const diff = lastPresses[i] - lastPresses[i - 1];
+    const time = lastPresses[i] - lastPresses[i - 1];
+
+    times.push(time);
+  }
+
+  const differences = [];
+
+  for (let i = 1; i < times.length; i++) {
+    const diff = Math.abs(times[i] - times[i - 1]);
 
     differences.push(diff);
   }
 
   const maxDiff = differences.sort((a, b) => b - a)[0];
+
+  console.log(maxDiff);
 
   return maxDiff <= maxFidgetingDifference;
 }
