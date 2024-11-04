@@ -5,19 +5,8 @@
  * Programming 2024, Interaction Design Bachelor, Malmö University
  *
  * This assignment is written by:
- * Name Surname
- *
- *
- * The template contains some sample code exemplifying the template code structure.
- * You should use the structure with `state`, `settings`, `setup`, `update`, and `use`.
- * `scale` and `toAbsolute` are very helpful in data processing.
- *
- * For instructions, see the Canvas assignment: https://mau.instructure.com/courses/11936/assignments/84965
- * You might want to look at the Assignment examples for more elaborate starting points.
- *
+ * Lucja Stozek
  */
-
-// The state should contain all the "moving" parts of your program, values that change.
 
 /**
  * @typedef {Object} Character
@@ -73,8 +62,6 @@
  */
 
 /**
- * Initial state with default values for the candle position, smoke traces,
- * flame intensity, and latest user activity time.
  * @type {State}
  */
 let state = Object.freeze({
@@ -93,8 +80,6 @@ let state = Object.freeze({
 });
 
 /**
- * Fixed settings for HTML elements and styling of the candle, flame,
- * candle body, smoke trace, and hidden text. These remain constant.
  * @type {Settings}
  */
 const settings = Object.freeze({
@@ -148,10 +133,6 @@ function updateHeartRate() {
   });
 }
 
-/**
- * This is where we put the code that transforms our data.
- * update() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
- */
 function update() {
   updateHeadingFontSize();
   updateCharsPerSecond();
@@ -174,6 +155,43 @@ function random(seed) {
   const x = Math.sin(seed) * 10000;
 
   return x - Math.floor(x);
+}
+
+function shake() {
+  const { anxietyLevel } = state;
+  const { body } = settings;
+
+  const shakingValue = anxietyLevel * 0.1;
+  const transformValue = `translate(0, ${Math.random() * shakingValue - shakingValue / 2}px)`;
+  body.style.transform = transformValue;
+}
+
+/**
+ * Return `num` normalized to 0..1 in range min..max.
+ * @param {number} num
+ * @param {number} min
+ * @param {number} max
+ * @returns number
+ */
+function scale(num, min, max) {
+  if (num < min) return 0;
+  if (num > max) return 1;
+  return (num - min) / (max - min);
+}
+
+/**
+ * Re-maps a number from one range to another.
+ * @param {number} num
+ * @param {number} minNum
+ * @param {number} maxNum
+ * @param {number} minOutput
+ * @param {number} maxOutput
+ * @returns number
+ */
+function map(num, minNum, maxNum, minOutput, maxOutput) {
+  const range = maxOutput - minOutput;
+
+  return scale(num, minNum, maxNum) * range + minOutput;
 }
 
 function useHeading() {
@@ -292,15 +310,6 @@ function useBackgroundWords() {
   }
 }
 
-function shake() {
-  const { anxietyLevel } = state;
-  const { body } = settings;
-
-  const shakingValue = anxietyLevel * 0.1;
-  const transformValue = `translate(0, ${Math.random() * shakingValue - shakingValue / 2}px)`;
-  body.style.transform = transformValue;
-}
-
 /**
  * This is where we put the code that outputs our data.
  * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
@@ -321,6 +330,31 @@ function use() {
   window.requestAnimationFrame(use);
 }
 
+function getWeight(minWeight, maxWeight) {
+  const { latestActivity } = state;
+  const timeElapsed = (Date.now() - latestActivity) / 1000;
+
+  return minWeight + maxWeight - map(timeElapsed, 0, 1, minWeight, maxWeight);
+}
+
+function isFidgeting() {
+  const { maxFidgetingDifference } = settings;
+  const { keyPressesHistory } = state;
+
+  const lastPresses = keyPressesHistory.slice(-4);
+  const differences = [];
+
+  for (let i = 1; i < lastPresses.length; i++) {
+    const diff = lastPresses[i] - lastPresses[i - 1];
+
+    differences.push(diff);
+  }
+
+  const maxDiff = differences.sort((a, b) => b - a)[0];
+
+  return maxDiff <= maxFidgetingDifference;
+}
+
 function updateHeadingFontSize() {
   const { heading, maxWidth } = settings;
   const { fontSize } = state;
@@ -328,41 +362,6 @@ function updateHeadingFontSize() {
   if (heading.offsetWidth > maxWidth * 0.8 && fontSize > 0) {
     updateState({ fontSize: fontSize - 1 });
   }
-}
-
-/**
- * Return `num` normalized to 0..1 in range min..max.
- * @param {number} num
- * @param {number} min
- * @param {number} max
- * @returns number
- */
-function scale(num, min, max) {
-  if (num < min) return 0;
-  if (num > max) return 1;
-  return (num - min) / (max - min);
-}
-
-/**
- * Re-maps a number from one range to another.
- * @param {number} num
- * @param {number} minNum
- * @param {number} maxNum
- * @param {number} minOutput
- * @param {number} maxOutput
- * @returns number
- */
-function map(num, minNum, maxNum, minOutput, maxOutput) {
-  const range = maxOutput - minOutput;
-
-  return scale(num, minNum, maxNum) * range + minOutput;
-}
-
-function getWeight(minWeight, maxWeight) {
-  const { latestActivity } = state;
-  const timeElapsed = (Date.now() - latestActivity) / 1000;
-
-  return minWeight + maxWeight - map(timeElapsed, 0, 1, minWeight, maxWeight);
 }
 
 /**
@@ -517,24 +516,6 @@ function clearBackgroundInterval() {
   }
 }
 
-function isFidgeting() {
-  const { maxFidgetingDifference } = settings;
-  const { keyPressesHistory } = state;
-
-  const lastPresses = keyPressesHistory.slice(-4);
-  const differences = [];
-
-  for (let i = 1; i < lastPresses.length; i++) {
-    const diff = lastPresses[i] - lastPresses[i - 1];
-
-    differences.push(diff);
-  }
-
-  const maxDiff = differences.sort((a, b) => b - a)[0];
-
-  return maxDiff <= maxFidgetingDifference;
-}
-
 function updateKeyPressesHistory() {
   const { keyPressesHistory, anxietyLevel } = state;
 
@@ -580,4 +561,5 @@ function setup() {
   update();
   use();
 }
+
 setup(); // Always remember to call setup()!
