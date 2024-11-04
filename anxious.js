@@ -323,7 +323,7 @@ function shake() {
   const { body } = settings;
 
   const shakingValue = anxietyLevel * 0.1;
-  const transformValue = `translate(${Math.random() * shakingValue - shakingValue / 2}px, ${Math.random() * shakingValue - shakingValue / 2}px)`;
+  const transformValue = `translate(0, ${Math.random() * shakingValue - shakingValue / 2}px)`;
   body.style.transform = transformValue;
 }
 
