@@ -9,12 +9,10 @@
 }
 
 :root {
-  --black: #121212;
-  --white: #faf7f5;
-  --red: #b0303b;
-  --cyan: #476a9e;
-  --purple: #e0a738;
-  --orange: #5a6d3c;
+  --black: #030303;
+  --white: #fef9f3;
+  --red: #e51919;
+  --gray: #e3f8ff;
 }
 
 /* Remove the margin in all browsers */

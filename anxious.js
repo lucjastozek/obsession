@@ -71,7 +71,6 @@
  * @property {Word} initialWord
  * @property {string} fontSettings
  * @property {number} maxFidgetingDifference
- * @property {Array.<string>} palette
  */
 
 /**
@@ -123,7 +122,6 @@ const settings = Object.freeze({
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
   maxFidgetingDifference: 700,
-  palette: ["cyan", "purple", "orange"],
 });
 
 /**
@@ -174,15 +172,6 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**
- * @template T
- * @param {Array.<T>} arr
- * @returns {T}
- */
-function pickWithSeed(arr, seed) {
-  return arr[Math.floor(random(seed) * arr.length)];
-}
-
 function random(seed) {
   const x = Math.sin(seed) * 10000;
 
@@ -190,7 +179,7 @@ function random(seed) {
 }
 
 function useHeading() {
-  const { heading, fontSettings, palette } = settings;
+  const { heading, fontSettings } = settings;
   const { words, fontSize } = state;
   const headingText = words[0];
 
@@ -198,9 +187,8 @@ function useHeading() {
 
   for (const char of headingText) {
     const character = document.createElement("span");
-    const randomColor = pickWithSeed(palette, char.seed);
     character.classList.add("heading-character", "char");
-    character.style.backgroundColor = `var(--${randomColor})`;
+    character.style.backgroundColor = `var(--gray)`;
     character.style.opacity = char.opacity;
     character.style.fontVariationSettings = `'wght' ${char.headingWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}, ${fontSettings}`;
     character.innerHTML = char.letter;
@@ -268,39 +256,41 @@ function useRandomWords() {
   const { words } = state;
   const existingRandomWords = document.querySelectorAll(".random-word");
 
-  for (let i = 0; i <= words.length / 5 - existingRandomWords.length; i++) {
-    const wordElement = document.createElement("span");
-
-    const word = pick(words);
-
-    wordElement.classList.add("random-word");
-
-    for (const char of word) {
-      const charElement = document.createElement("span");
-      charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}`;
-      charElement.classList.add("random-word-char", "char");
-      charElement.innerText = char.letter;
-
-      wordElement.appendChild(charElement);
-    }
-
-    let x = Math.random() * window.innerWidth;
-    const y = Math.random() * window.innerHeight;
-
-    const diagonalX = y / Math.tan(angle);
-
-    while (Math.abs(diagonalX - x) < 300 || x < 0) {
-      x += Math.random() * 100;
-    }
-
-    if (x > window.innerWidth - 100) {
-      x -= 120;
-    }
-
-    wordElement.style.transform = `translate(${x}px, ${y}px)`;
-
-    randomWordsContainer.appendChild(wordElement);
+  if (existingRandomWords.length > words.length * 0.6) {
+    return;
   }
+
+  const wordElement = document.createElement("span");
+
+  const word = pick(words);
+
+  wordElement.classList.add("random-word");
+
+  for (const char of word) {
+    const charElement = document.createElement("span");
+    charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}`;
+    charElement.classList.add("random-word-char", "char");
+    charElement.innerText = char.letter;
+
+    wordElement.appendChild(charElement);
+  }
+
+  let x = Math.random() * window.innerWidth;
+  const y = Math.random() * window.innerHeight;
+
+  const diagonalX = y / Math.tan(angle);
+
+  while (Math.abs(diagonalX - x) < 300 || x < 0) {
+    x += Math.random() * 100;
+  }
+
+  if (x > window.innerWidth - 100) {
+    x -= 120;
+  }
+
+  wordElement.style.transform = `translate(${x}px, ${y}px)`;
+
+  randomWordsContainer.appendChild(wordElement);
 }
 
 function useBackgroundWords() {
@@ -352,8 +342,6 @@ function use() {
 
   clearSentences();
   sentences.forEach(useSentence);
-
-  useRandomWords();
 
   window.requestAnimationFrame(use);
 }
@@ -500,6 +488,7 @@ function updateHeartBeatInterval() {
   if (heartBeatInterval === undefined) {
     const newInterval = setInterval(() => {
       updateFontGrading();
+      useRandomWords();
     }, 50000 / heartRate);
 
     updateState({
@@ -513,6 +502,7 @@ function updateHeartBeatInterval() {
 
     const newInterval = setInterval(() => {
       updateFontGrading();
+      useRandomWords();
     }, 50000 / heartRate);
 
     updateState({
