@@ -42,25 +42,31 @@ body {
 }
 
 #heading {
+  position: relative;
   margin: 0;
   display: inline;
   font-size: 160px;
   white-space: nowrap;
+  z-index: 4;
 }
 
 #headings-container {
+  position: relative;
   transform-origin: top left;
   display: flex;
   justify-content: end;
+  z-index: 4;
 }
 
 .heading-character {
+  position: relative;
   background-color: var(--white);
   color: var(--black);
   display: inline-block;
   transform-origin: center;
   margin: 0.1em;
   margin-top: -0.4em;
+  z-index: 4;
 }
 
 #sentences-container {
