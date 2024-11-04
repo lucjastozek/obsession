@@ -71,6 +71,7 @@
  * @property {Word} initialWord
  * @property {string} fontSettings
  * @property {number} maxFidgetingDifference
+ * @property {Array.<string>} palette
  */
 
 /**
@@ -122,6 +123,7 @@ const settings = Object.freeze({
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
   maxFidgetingDifference: 700,
+  palette: ["cyan", "purple", "orange"],
 });
 
 /**
@@ -163,8 +165,32 @@ function update() {
   window.requestAnimationFrame(update);
 }
 
+/**
+ * @template T
+ * @param {Array.<T>} arr
+ * @returns {T}
+ */
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/**
+ * @template T
+ * @param {Array.<T>} arr
+ * @returns {T}
+ */
+function pickWithSeed(arr, seed) {
+  return arr[Math.floor(random(seed) * arr.length)];
+}
+
+function random(seed) {
+  const x = Math.sin(seed) * 10000;
+
+  return x - Math.floor(x);
+}
+
 function useHeading() {
-  const { heading, fontSettings } = settings;
+  const { heading, fontSettings, palette } = settings;
   const { words, fontSize } = state;
   const headingText = words[0];
 
@@ -172,7 +198,9 @@ function useHeading() {
 
   for (const char of headingText) {
     const character = document.createElement("span");
+    const randomColor = pickWithSeed(palette, char.seed);
     character.classList.add("heading-character", "char");
+    character.style.backgroundColor = `var(--${randomColor})`;
     character.style.opacity = char.opacity;
     character.style.fontVariationSettings = `'wght' ${char.headingWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}, ${fontSettings}`;
     character.innerHTML = char.letter;
@@ -225,21 +253,15 @@ function useSentence(sentence) {
   sentencesContainer.appendChild(sentenceElement);
 }
 
-function pickRandomWord() {
-  const { words } = state;
-
-  return words[Math.floor(Math.random() * words.length)];
-}
-
 function useRandomWords() {
   const { randomWordsContainer } = settings;
   const { words } = state;
   const existingRandomWords = document.querySelectorAll(".random-word");
 
-  for (let i = 0; i <= words.length / 10 - existingRandomWords.length; i++) {
+  for (let i = 0; i <= words.length / 5 - existingRandomWords.length; i++) {
     const wordElement = document.createElement("span");
 
-    const word = pickRandomWord();
+    const word = pick(words);
 
     wordElement.classList.add("random-word");
 
@@ -259,9 +281,16 @@ function useRandomWords() {
 
 function useBackgroundWords() {
   const { background } = settings;
+  const { sentences } = state;
 
-  const randomWord = pickRandomWord();
-  const text = randomWord.map((char) => char.letter).join("");
+  if (background.offsetHeight > window.innerHeight + 50) {
+    return;
+  }
+
+  const randomSentence = pick(sentences);
+  const text = randomSentence
+    .map((word) => word.map((char) => char.letter).join(""))
+    .join(" ");
   background.append(text + " ");
 }
 

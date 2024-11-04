@@ -8,6 +8,15 @@
   src: url("./RobotoFlex-VariableFont_GRAD\,XOPQ\,XTRA\,YOPQ\,YTAS\,YTDE\,YTFI\,YTLC\,YTUC\,opsz\,slnt\,wdth\,wght.ttf");
 }
 
+:root {
+  --black: #121212;
+  --white: #faf7f5;
+  --red: #b0303b;
+  --cyan: #476a9e;
+  --purple: #e0a738;
+  --orange: #5a6d3c;
+}
+
 /* Remove the margin in all browsers */
 html,
 body {
@@ -17,8 +26,7 @@ body {
   height: 100vh;
   line-height: inherit;
   font-family: "Roboto", serif;
-  background-color: #050505;
-  color: yellow;
+  background-color: var(--black);
   overflow-y: hidden;
   text-align: left;
 }
@@ -27,7 +35,7 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  color: #ffffff;
+  color: var(--white);
   z-index: 1;
   font-size: 2rem;
   opacity: 0.1;
@@ -47,8 +55,8 @@ body {
 }
 
 .heading-character {
-  background-color: #ffffff;
-  color: #050505;
+  background-color: var(--white);
+  color: var(--black);
   display: inline-block;
   transform-origin: center;
   margin: 0.1em;
@@ -66,8 +74,8 @@ body {
   position: fixed;
   font-size: 1.5rem;
   max-width: 480px;
-  background-color: #ffffff;
-  color: #050505;
+  background-color: var(--white);
+  color: var(--black);
   margin: 2rem;
   width: fit-content;
   z-index: 2;
@@ -79,13 +87,11 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  color: #ffffff;
-  font-size: 1.5rem;
   z-index: 3;
 }
 
 .random-word-char {
-  color: red;
-  font-size: 1.5rem;
+  color: var(--red);
+  font-size: 2.5rem;
   z-index: 3;
 }
