@@ -301,19 +301,24 @@ function updateSentences() {
  */
 function setup() {
   const { angle, headingsContainer, initialWord, maxWidth } = settings;
+
   updateState({
     words: [[...initialWord]],
   });
+
   headingsContainer.style.transform = `rotate(${angle}rad) translate(0, -50%)`;
   headingsContainer.style.width = maxWidth;
+
   document.addEventListener("keydown", function (event) {
     updateWords(event);
     updateSentences();
+  });
+  document.addEventListener("keyup", function (event) {
     updateState({
       latestActivity: Date.now(),
     });
   });
-  document.addEventListener("keyup", function (event) {});
+
   update();
   use();
 }
