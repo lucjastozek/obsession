@@ -231,8 +231,12 @@ function useSentence(sentence) {
 
   const diagonalX = y / Math.tan(angle);
 
-  while (Math.abs(diagonalX - x) < 300) {
-    x += random(sentenceSeed) * 300 - 100;
+  while (Math.abs(diagonalX - x) < 300 || x < 0) {
+    x += random(sentenceSeed) * 100;
+  }
+
+  if (x > window.innerWidth - 100) {
+    x -= 120;
   }
 
   sentenceElement.style.transform = `translate(${x}px, ${y}px)`;
@@ -285,8 +289,12 @@ function useRandomWords() {
 
     const diagonalX = y / Math.tan(angle);
 
-    while (Math.abs(diagonalX - x) < 300) {
-      x += Math.random() * 300 - 100;
+    while (Math.abs(diagonalX - x) < 300 || x < 0) {
+      x += Math.random() * 100;
+    }
+
+    if (x > window.innerWidth - 100) {
+      x -= 120;
     }
 
     wordElement.style.transform = `translate(${x}px, ${y}px)`;
