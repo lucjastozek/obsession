@@ -9,6 +9,7 @@
  */
 
 /**
+ * Represents character (letter)
  * @typedef {Object} Character
  * @property {string} letter
  * @property {number} opacity
@@ -115,9 +116,13 @@ function updateState(newState) {
   state = Object.freeze(Object.assign(Object.assign({}, state), newState));
 }
 
+/**
+ * Updates charsPerSecond based on startTime and charCounter
+ */
 function updateCharsPerSecond() {
   const { startTime, charCounter } = state;
 
+  // get elapsed seconds from startTime to now
   const timeElapsed = (Date.now() - startTime) / 1000;
 
   updateState({
@@ -125,6 +130,9 @@ function updateCharsPerSecond() {
   });
 }
 
+/**
+ * Updates heartRate based on anxietyLevel
+ */
 function updateHeartRate() {
   const { anxietyLevel } = state;
 
@@ -133,6 +141,10 @@ function updateHeartRate() {
   });
 }
 
+/**
+ * Transforms data.
+ * Runs every frame.
+ */
 function update() {
   updateHeadingFontSize();
   updateCharsPerSecond();
@@ -143,6 +155,7 @@ function update() {
 }
 
 /**
+ * Picks a random element from an array
  * @template T
  * @param {Array.<T>} arr
  * @returns {T}
@@ -151,12 +164,20 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+/**
+ * Seeded Math.random() equivalent
+ * @param {number} seed
+ * @returns number
+ */
 function random(seed) {
   const x = Math.sin(seed) * 10000;
 
   return x - Math.floor(x);
 }
 
+/**
+ * Shakes the document's body on the vertical axis
+ */
 function shake() {
   const { anxietyLevel } = state;
   const { body } = settings;
@@ -167,7 +188,7 @@ function shake() {
 }
 
 /**
- * Return `num` normalized to 0..1 in range min..max.
+ * Returns `num` normalized to 0..1 in range min..max.
  * @param {number} num
  * @param {number} min
  * @param {number} max
@@ -194,6 +215,9 @@ function map(num, minNum, maxNum, minOutput, maxOutput) {
   return scale(num, minNum, maxNum) * range + minOutput;
 }
 
+/**
+ * Prints heading
+ */
 function useHeading() {
   const { heading, fontSettings } = settings;
   const { words, fontSize } = state;
@@ -216,7 +240,9 @@ function useHeading() {
 }
 
 /**
+ * Prints sentence
  * @param {Array<Word>} sentence
+ * @param {number} index
  */
 function useSentence(sentence, index) {
   const { sentencesContainer, angle } = settings;
@@ -278,6 +304,9 @@ function useSentence(sentence, index) {
   sentencesContainer.appendChild(sentenceElement);
 }
 
+/**
+ * Prints background words
+ */
 function useBackgroundWords() {
   const { background } = settings;
   const { sentences } = state;
@@ -311,8 +340,8 @@ function useBackgroundWords() {
 }
 
 /**
- * This is where we put the code that outputs our data.
- * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
+ * Outputs the data.
+ * Runs every frame.
  */
 function use() {
   const { sentences, heartRate } = state;
@@ -332,6 +361,12 @@ function use() {
   window.requestAnimationFrame(use);
 }
 
+/**
+ * Gets weight within the given range based on time elapsed since previous activity.
+ * @param {number} minWeight
+ * @param {number} maxWeight
+ * @returns {number}
+ */
 function getWeight(minWeight, maxWeight) {
   const { latestActivity } = state;
   const timeElapsed = (Date.now() - latestActivity) / 1000;
@@ -339,6 +374,10 @@ function getWeight(minWeight, maxWeight) {
   return minWeight + maxWeight - map(timeElapsed, 0, 1, minWeight, maxWeight);
 }
 
+/**
+ * Checks if the user is fidgeting (performing repetetive actions with keyboard)
+ * @returns {boolean}
+ */
 function isFidgeting() {
   const { maxFidgetingDifference } = settings;
   const { keyPressesHistory } = state;
@@ -367,6 +406,9 @@ function isFidgeting() {
   return maxDiff <= maxFidgetingDifference;
 }
 
+/**
+ * Updates the heading font size for heading to fit the screen
+ */
 function updateHeadingFontSize() {
   const { heading, maxWidth } = settings;
   const { fontSize } = state;
@@ -377,7 +419,7 @@ function updateHeadingFontSize() {
 }
 
 /**
- * Adds character to the newest word or creates a new word
+ * Adds new character to the newest word or creates a new word
  * @param {KeyboardEvent} e
  */
 function updateWords(e) {
@@ -415,6 +457,9 @@ function updateWords(e) {
   }
 }
 
+/**
+ * Updates sentences based on words
+ */
 function updateSentences() {
   const { words } = state;
   let newSentences = [];
@@ -433,6 +478,9 @@ function updateSentences() {
   });
 }
 
+/**
+ * Updates font grading so it changes between -200 and 150 with every heart beat
+ */
 function updateFontGrading() {
   const { words, sentences } = state;
 
@@ -468,6 +516,9 @@ function updateFontGrading() {
   });
 }
 
+/**
+ * Updates the heart beat interval based on heartRate
+ */
 function updateHeartBeatInterval() {
   const { heartBeatInterval, heartRate } = state;
 
@@ -498,6 +549,10 @@ function updateHeartBeatInterval() {
   }
 }
 
+/**
+ * Updates the interval responsible for adding new words to the background.
+ * Sets delay based on current heartRate.
+ */
 function updateBackgroundInterval() {
   const { heartRate, backgroundInterval } = state;
 
@@ -519,6 +574,9 @@ function updateBackgroundInterval() {
   }
 }
 
+/**
+ * Performs clean-up of unused background interval
+ */
 function clearBackgroundInterval() {
   const { backgroundInterval } = state;
 
@@ -528,6 +586,10 @@ function clearBackgroundInterval() {
   }
 }
 
+/**
+ * Updates key presses history.
+ * Decreases anxietyLevel if user is fidgeting.
+ */
 function updateKeyPressesHistory() {
   const { keyPressesHistory, anxietyLevel } = state;
 
@@ -543,7 +605,8 @@ function updateKeyPressesHistory() {
 }
 
 /**
- * Setup is run once, at the start of the program. It sets everything up for us!
+ * Sets everything up.
+ * Runs once, at the start of the program.
  */
 function setup() {
   const { angle, headingsContainer, initialWord, maxWidth } = settings;
@@ -574,4 +637,4 @@ function setup() {
   use();
 }
 
-setup(); // Always remember to call setup()!
+setup();
