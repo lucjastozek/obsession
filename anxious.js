@@ -46,7 +46,7 @@
  * @property {number} charCounter
  * @property {number} charsPerSecond
  * @property {number} heartRate
- * @property {ReturnType<typeof setInterval>} interval
+ * @property {ReturnType<typeof setInterval>} backgroundInterval
  */
 
 /**
@@ -75,7 +75,7 @@ let state = Object.freeze({
   charCounter: 0,
   charsPerSecond: 0,
   heartRate: 100,
-  interval: undefined,
+  backgroundInterval: undefined,
 });
 
 /**
@@ -144,7 +144,7 @@ function useHeading() {
 
   for (const char of headingText) {
     const character = document.createElement("span");
-    character.classList.add("character");
+    character.classList.add("heading-character", "char");
     character.style.opacity = char.opacity;
     character.style.fontVariationSettings = `'wght' ${char.headingWeight}, 'yopq' ${char.thinStroke}, ${fontSettings}`;
     character.innerHTML = char.letter;
@@ -181,6 +181,7 @@ function useSentence(sentence) {
 
     for (const char of word) {
       const charElement = document.createElement("span");
+      charElement.classList.add("char");
 
       charElement.innerText = char.letter;
 
@@ -217,7 +218,7 @@ function useRandomWords() {
     for (const char of word) {
       const charElement = document.createElement("span");
       charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}`;
-      charElement.classList.add("random-word-char");
+      charElement.classList.add("random-word-char", "char");
       charElement.innerText = char.letter;
 
       wordElement.appendChild(charElement);
@@ -363,27 +364,34 @@ function updateSentences() {
   });
 }
 
-function updateHeartRateInterval() {
-  const { heartRate, interval } = state;
+function addHeartRateGrade() {
+  const characters = document.querySelectorAll(".char");
 
-  if (interval === undefined) {
-    console.log(interval);
+  for (const char of characters) {
+    // char.style.fontVariationSettings += `, GRAD ${map(-200, 150)}`;
+  }
+}
+
+function updateBackgroundInterval() {
+  const { heartRate, backgroundInterval } = state;
+
+  if (backgroundInterval === undefined) {
     const newInterval = setInterval(() => {
       useBackgroundWords();
     }, 50000 / heartRate);
 
     updateState({
-      interval: newInterval,
+      backgroundInterval: newInterval,
     });
   }
 }
 
-function clearHeartRateInterval() {
-  const { interval } = state;
+function clearBackgroundInterval() {
+  const { backgroundInterval } = state;
 
-  if (interval !== undefined) {
-    clearInterval(interval);
-    updateState({ interval: undefined });
+  if (backgroundInterval !== undefined) {
+    clearInterval(backgroundInterval);
+    updateState({ backgroundInterval: undefined });
   }
 }
 
@@ -403,7 +411,7 @@ function setup() {
   document.addEventListener("keydown", function (event) {
     updateWords(event);
     updateSentences();
-    clearHeartRateInterval();
+    clearBackgroundInterval();
   });
 
   document.addEventListener("keyup", function (event) {
@@ -411,7 +419,7 @@ function setup() {
       latestActivity: Date.now(),
     });
 
-    updateHeartRateInterval();
+    updateBackgroundInterval();
   });
 
   update();
