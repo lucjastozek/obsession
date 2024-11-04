@@ -45,6 +45,8 @@
  * @property {number} startTime
  * @property {number} charCounter
  * @property {number} charsPerSecond
+ * @property {number} heartRate
+ * @property {ReturnType<typeof setInterval>} interval
  */
 
 /**
@@ -72,6 +74,8 @@ let state = Object.freeze({
   startTime: Date.now(),
   charCounter: 0,
   charsPerSecond: 0,
+  heartRate: 100,
+  interval: undefined,
 });
 
 /**
@@ -225,13 +229,11 @@ function useRandomWords() {
 }
 
 function useBackgroundWords() {
-  const { words } = state;
   const { background } = settings;
 
-  for (const word of words) {
-    const text = word.map((char) => char.letter).join("");
-    background.append(text + " ");
-  }
+  const randomWord = pickRandomWord();
+  const text = randomWord.map((char) => char.letter).join("");
+  background.append(text + " ");
 }
 
 function clearSentences() {
@@ -249,11 +251,7 @@ function clearSentences() {
  * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
  */
 function use() {
-  const { latestActivity, sentences } = state;
-
-  if (Date.now() - latestActivity > 5000) {
-    useBackgroundWords();
-  }
+  const { sentences } = state;
 
   useHeading();
 
@@ -365,6 +363,30 @@ function updateSentences() {
   });
 }
 
+function updateHeartRateInterval() {
+  const { heartRate, interval } = state;
+
+  if (interval === undefined) {
+    console.log(interval);
+    const newInterval = setInterval(() => {
+      useBackgroundWords();
+    }, 50000 / heartRate);
+
+    updateState({
+      interval: newInterval,
+    });
+  }
+}
+
+function clearHeartRateInterval() {
+  const { interval } = state;
+
+  if (interval !== undefined) {
+    clearInterval(interval);
+    updateState({ interval: undefined });
+  }
+}
+
 /**
  * Setup is run once, at the start of the program. It sets everything up for us!
  */
@@ -381,12 +403,15 @@ function setup() {
   document.addEventListener("keydown", function (event) {
     updateWords(event);
     updateSentences();
+    clearHeartRateInterval();
   });
 
   document.addEventListener("keyup", function (event) {
     updateState({
       latestActivity: Date.now(),
     });
+
+    updateHeartRateInterval();
   });
 
   update();
