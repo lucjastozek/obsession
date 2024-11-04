@@ -85,7 +85,7 @@ body {
 }
 
 .random-word-char {
-  color: #ffffff;
+  color: red;
   font-size: 1.5rem;
   z-index: 3;
 }

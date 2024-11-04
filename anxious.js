@@ -29,10 +29,17 @@
  * @property {number} thinStroke
  * @property {number} rotation
  * @property {number} seed
+ * @property {number} grade
  */
 
 /**
  * @typedef {Array.<Character>} Word
+ */
+
+/**
+ * @typedef {Object} HeartBeatInterval
+ * @property {ReturnType<typeof setInterval>} interval
+ * @property {number} heartRate
  */
 
 /**
@@ -47,6 +54,7 @@
  * @property {number} charsPerSecond
  * @property {number} heartRate
  * @property {ReturnType<typeof setInterval>} backgroundInterval
+ * @property {HeartBeatInterval} heartBeatInterval
  */
 
 /**
@@ -76,6 +84,7 @@ let state = Object.freeze({
   charsPerSecond: 0,
   heartRate: 100,
   backgroundInterval: undefined,
+  heartBeatInterval: undefined,
 });
 
 /**
@@ -101,6 +110,7 @@ const settings = Object.freeze({
       thinStroke: 100,
       rotation: 0,
       seed: 1,
+      grade: 0,
     },
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
@@ -131,6 +141,7 @@ function updateCharsPerSecond() {
 function update() {
   updateHeadingFontSize();
   updateCharsPerSecond();
+  updateHeartBeatInterval();
 
   window.requestAnimationFrame(update);
 }
@@ -146,7 +157,7 @@ function useHeading() {
     const character = document.createElement("span");
     character.classList.add("heading-character", "char");
     character.style.opacity = char.opacity;
-    character.style.fontVariationSettings = `'wght' ${char.headingWeight}, 'yopq' ${char.thinStroke}, ${fontSettings}`;
+    character.style.fontVariationSettings = `'wght' ${char.headingWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}, ${fontSettings}`;
     character.innerHTML = char.letter;
     character.style.transform = `rotate(${char.rotation}deg)`;
     heading.appendChild(character);
@@ -185,7 +196,7 @@ function useSentence(sentence) {
 
       charElement.innerText = char.letter;
 
-      charElement.style.fontVariationSettings = `'wght' ${char.sentenceWeight}, 'yopq' ${char.thinStroke}`;
+      charElement.style.fontVariationSettings = `'wght' ${char.sentenceWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}`;
 
       wordElement.append(charElement);
     }
@@ -217,7 +228,7 @@ function useRandomWords() {
 
     for (const char of word) {
       const charElement = document.createElement("span");
-      charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}`;
+      charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}`;
       charElement.classList.add("random-word-char", "char");
       charElement.innerText = char.letter;
 
@@ -337,6 +348,7 @@ function updateWords(e) {
       thinStroke: Math.round(Math.random() * 110 + 25),
       rotation: Math.round(Math.random() * 20 - 10),
       seed: Math.random() * 272727,
+      grade: 0,
     });
 
     updateState({
@@ -364,11 +376,69 @@ function updateSentences() {
   });
 }
 
-function addHeartRateGrade() {
-  const characters = document.querySelectorAll(".char");
+function updateFontGrading() {
+  const { words, sentences } = state;
 
-  for (const char of characters) {
-    // char.style.fontVariationSettings += `, GRAD ${map(-200, 150)}`;
+  /**
+   * @type {Word[]}
+   */
+  const updatedWords = JSON.parse(JSON.stringify(words));
+
+  /**
+   * @type {Word[][]}
+   */
+  const updatedSentences = JSON.parse(JSON.stringify(sentences));
+
+  for (const word of updatedWords) {
+    for (const char of word) {
+      const newGrade = char.grade === -200 ? 150 : -200;
+      char.grade = newGrade;
+    }
+  }
+
+  for (const sentence of updatedSentences) {
+    for (const word of sentence) {
+      for (const char of word) {
+        const newGrade = char.grade === -200 ? 150 : -200;
+        char.grade = newGrade;
+      }
+    }
+  }
+
+  updateState({
+    sentences: updatedSentences,
+    words: updatedWords,
+  });
+}
+
+function updateHeartBeatInterval() {
+  const { heartBeatInterval, heartRate } = state;
+
+  if (heartBeatInterval === undefined) {
+    const newInterval = setInterval(() => {
+      updateFontGrading();
+    }, 50000 / heartRate);
+
+    updateState({
+      heartBeatInterval: {
+        interval: newInterval,
+        heartRate: heartRate,
+      },
+    });
+  } else if (heartBeatInterval.heartRate !== heartRate) {
+    clearInterval(heartBeatInterval.interval);
+
+    const newInterval = setInterval(() => {
+      console.log("mowi gej!");
+      updateFontGrading();
+    }, 50000 / heartRate);
+
+    updateState({
+      heartBeatInterval: {
+        interval: newInterval,
+        heartRate: heartRate,
+      },
+    });
   }
 }
 
