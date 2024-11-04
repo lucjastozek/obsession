@@ -76,7 +76,6 @@ body {
 .sentence {
   position: fixed;
   font-size: 1.5rem;
-  max-width: 480px;
   background-color: var(--white);
   color: var(--black);
   margin: 2rem;

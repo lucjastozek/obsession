@@ -200,7 +200,7 @@ function useHeading() {
 /**
  * @param {Array<Word>} sentence
  */
-function useSentence(sentence) {
+function useSentence(sentence, index) {
   const { sentencesContainer, angle } = settings;
 
   const sentenceElement = document.createElement("p");
@@ -212,17 +212,36 @@ function useSentence(sentence) {
     sentenceSeed = sentence[0][0].seed;
   }
 
-  let x = Math.round(sentenceSeed) % (window.innerWidth * 0.8);
-  let y = Math.round(sentenceSeed) % (window.innerHeight - 50);
-
+  let x;
+  let y = (index * 50) % window.innerHeight;
   const diagonalX = y / Math.tan(angle);
 
-  while (Math.abs(diagonalX - x) < 300 || x < 0) {
-    x += random(sentenceSeed) * 100;
+  if (y <= window.innerHeight / 2) {
+    x = map(
+      Math.round(sentenceSeed) % (window.innerWidth * 0.8),
+      0,
+      window.innerWidth * 0.8,
+      y,
+      window.innerWidth / 2
+    );
+    sentenceElement.style.maxWidth = `${window.innerWidth - x - 50}px`;
+  } else {
+    x = map(
+      Math.round(sentenceSeed) % (window.innerWidth * 0.8),
+      0,
+      window.innerWidth * 0.8,
+      0,
+      50
+    );
+    sentenceElement.style.maxWidth = `${diagonalX - x - 50}px`;
   }
 
-  if (x > window.innerWidth - 100) {
-    x -= 120;
+  while (Math.abs(diagonalX - x) < 300 || x < 0) {
+    if (y < window.innerHeight / 2) {
+      x += random(sentenceSeed) * 100;
+    } else {
+      x -= random(sentenceSeed) * 100;
+    }
   }
 
   sentenceElement.style.transform = `translate(${x}px, ${y}px)`;
