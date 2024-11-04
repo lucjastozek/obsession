@@ -55,18 +55,22 @@
  * @property {number} heartRate
  * @property {ReturnType<typeof setInterval>} backgroundInterval
  * @property {HeartBeatInterval} heartBeatInterval
+ * @property {number} anxietyLevel
+ * @property {Array.<number>} keyPressesHistory
  */
 
 /**
  * @typedef {Object} Settings
  * @property {HTMLElement} heading
- * @property {HTMLElement} headings
+ * @property {HTMLElement} headingsContainer
  * @property {HTMLElement} sentencesContainer
  * @property {HTMLElement} randomWordsContainer
  * @property {HTMLElement} background
+ * @property {HTMLElement} body
  * @property {number} angle
  * @property {Word} initialWord
  * @property {string} fontSettings
+ * @property {number} maxFidgetingDifference
  */
 
 /**
@@ -85,6 +89,8 @@ let state = Object.freeze({
   heartRate: 100,
   backgroundInterval: undefined,
   heartBeatInterval: undefined,
+  anxietyLevel: 10,
+  keyPressesHistory: [],
 });
 
 /**
@@ -97,6 +103,7 @@ const settings = Object.freeze({
   headingsContainer: document.querySelector("#headings-container"),
   sentencesContainer: document.querySelector("#sentences-container"),
   randomWordsContainer: document.querySelector("#random-words-container"),
+  body: document.querySelector("body"),
   background: document.querySelector("#background"),
   angle: Math.atan(window.innerHeight / window.innerWidth),
   maxWidth: Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2),
@@ -114,6 +121,7 @@ const settings = Object.freeze({
     },
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
+  maxFidgetingDifference: 700,
 });
 
 /**
@@ -134,6 +142,14 @@ function updateCharsPerSecond() {
   });
 }
 
+function updateHeartRate() {
+  const { anxietyLevel } = state;
+
+  updateState({
+    heartRate: 100 + Math.floor(anxietyLevel),
+  });
+}
+
 /**
  * This is where we put the code that transforms our data.
  * update() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
@@ -141,6 +157,7 @@ function updateCharsPerSecond() {
 function update() {
   updateHeadingFontSize();
   updateCharsPerSecond();
+  updateHeartRate();
   updateHeartBeatInterval();
 
   window.requestAnimationFrame(update);
@@ -258,12 +275,25 @@ function clearSentences() {
   }
 }
 
+function shake() {
+  const { anxietyLevel } = state;
+  const { body } = settings;
+
+  const shakingValue = anxietyLevel * 0.1;
+  const transformValue = `translate(${Math.random() * shakingValue - shakingValue / 2}px, ${Math.random() * shakingValue - shakingValue / 2}px)`;
+  body.style.transform = transformValue;
+}
+
 /**
  * This is where we put the code that outputs our data.
  * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
  */
 function use() {
-  const { sentences } = state;
+  const { sentences, heartRate } = state;
+
+  if (heartRate > 130) {
+    shake();
+  }
 
   useHeading();
 
@@ -429,7 +459,6 @@ function updateHeartBeatInterval() {
     clearInterval(heartBeatInterval.interval);
 
     const newInterval = setInterval(() => {
-      console.log("mowi gej!");
       updateFontGrading();
     }, 50000 / heartRate);
 
@@ -447,6 +476,13 @@ function updateBackgroundInterval() {
 
   if (backgroundInterval === undefined) {
     const newInterval = setInterval(() => {
+      const { anxietyLevel } = state;
+      const incrementValue = anxietyLevel > 30 ? 0.1 : 0.5;
+
+      updateState({
+        anxietyLevel: anxietyLevel + incrementValue,
+      });
+
       useBackgroundWords();
     }, 25000 / heartRate);
 
@@ -462,6 +498,38 @@ function clearBackgroundInterval() {
   if (backgroundInterval !== undefined) {
     clearInterval(backgroundInterval);
     updateState({ backgroundInterval: undefined });
+  }
+}
+
+function isFidgeting() {
+  const { maxFidgetingDifference } = settings;
+  const { keyPressesHistory } = state;
+
+  const lastPresses = keyPressesHistory.slice(-4);
+  const differences = [];
+
+  for (let i = 1; i < lastPresses.length; i++) {
+    const diff = lastPresses[i] - lastPresses[i - 1];
+
+    differences.push(diff);
+  }
+
+  const maxDiff = differences.sort((a, b) => b - a)[0];
+
+  return maxDiff <= maxFidgetingDifference;
+}
+
+function updateKeyPressesHistory() {
+  const { keyPressesHistory, anxietyLevel } = state;
+
+  updateState({
+    keyPressesHistory: [...keyPressesHistory, Date.now()],
+  });
+
+  if (isFidgeting()) {
+    updateState({
+      anxietyLevel: anxietyLevel - 0.1,
+    });
   }
 }
 
@@ -482,6 +550,7 @@ function setup() {
     updateWords(event);
     updateSentences();
     clearBackgroundInterval();
+    updateKeyPressesHistory();
   });
 
   document.addEventListener("keyup", function (event) {
