@@ -39,6 +39,7 @@
  * @property {Array<Array.<Word>>} sentences
  * @property {number} fontSize
  * @property {number} maxWidth
+ * @property {number} latestActivity
  */
 
 /**
@@ -62,6 +63,7 @@ let state = Object.freeze({
   words: [],
   sentences: [],
   fontSize: 160,
+  latestActivity: Date.now(),
 });
 
 /**
@@ -203,15 +205,7 @@ function useBackgroundWords() {
   }
 }
 
-/**
- * This is where we put the code that outputs our data.
- * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
- */
-function use() {
-  useBackgroundWords();
-  useHeading();
-
-  const { sentences } = state;
+function clearSentences() {
   const { sentencesContainer } = settings;
 
   const sentencesElements = document.querySelectorAll(".sentence");
@@ -219,7 +213,22 @@ function use() {
   for (const element of sentencesElements) {
     sentencesContainer.removeChild(element);
   }
+}
 
+/**
+ * This is where we put the code that outputs our data.
+ * use() is run every frame, assuming that we keep calling it with `window.requestAnimationFrame`.
+ */
+function use() {
+  const { latestActivity, sentences } = state;
+
+  if (Date.now() - latestActivity > 5000) {
+    useBackgroundWords();
+  }
+
+  useHeading();
+
+  clearSentences();
   sentences.forEach(useSentence);
 
   useRandomWords();
@@ -300,6 +309,9 @@ function setup() {
   document.addEventListener("keydown", function (event) {
     updateWords(event);
     updateSentences();
+    updateState({
+      latestActivity: Date.now(),
+    });
   });
   document.addEventListener("keyup", function (event) {});
   update();
