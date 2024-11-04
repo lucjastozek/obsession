@@ -64,7 +64,6 @@
  * @property {HTMLElement} heading
  * @property {HTMLElement} headingsContainer
  * @property {HTMLElement} sentencesContainer
- * @property {HTMLElement} randomWordsContainer
  * @property {HTMLElement} background
  * @property {HTMLElement} body
  * @property {number} angle
@@ -102,7 +101,6 @@ const settings = Object.freeze({
   heading: document.querySelector("#heading"),
   headingsContainer: document.querySelector("#headings-container"),
   sentencesContainer: document.querySelector("#sentences-container"),
-  randomWordsContainer: document.querySelector("#random-words-container"),
   body: document.querySelector("body"),
   background: document.querySelector("#background"),
   angle: Math.atan(window.innerHeight / window.innerWidth),
@@ -251,48 +249,6 @@ function useSentence(sentence) {
   sentencesContainer.appendChild(sentenceElement);
 }
 
-function useRandomWords() {
-  const { randomWordsContainer, angle } = settings;
-  const { words } = state;
-  const existingRandomWords = document.querySelectorAll(".random-word");
-
-  if (existingRandomWords.length > words.length * 0.6) {
-    return;
-  }
-
-  const wordElement = document.createElement("span");
-
-  const word = pick(words);
-
-  wordElement.classList.add("random-word");
-
-  for (const char of word) {
-    const charElement = document.createElement("span");
-    charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}`;
-    charElement.classList.add("random-word-char", "char");
-    charElement.innerText = char.letter;
-
-    wordElement.appendChild(charElement);
-  }
-
-  let x = Math.random() * window.innerWidth;
-  const y = Math.random() * window.innerHeight;
-
-  const diagonalX = y / Math.tan(angle);
-
-  while (Math.abs(diagonalX - x) < 300 || x < 0) {
-    x += Math.random() * 100;
-  }
-
-  if (x > window.innerWidth - 100) {
-    x -= 120;
-  }
-
-  wordElement.style.transform = `translate(${x}px, ${y}px)`;
-
-  randomWordsContainer.appendChild(wordElement);
-}
-
 function useBackgroundWords() {
   const { background } = settings;
   const { sentences } = state;
@@ -302,10 +258,27 @@ function useBackgroundWords() {
   }
 
   const randomSentence = pick(sentences);
-  const text = randomSentence
-    .map((word) => word.map((char) => char.letter).join(""))
-    .join(" ");
-  background.append(text + " ");
+  const randomWord = pick(randomSentence);
+
+  for (const word of randomSentence) {
+    if (word === randomWord) {
+      const mistake = document.createElement("span");
+      mistake.classList.add("mistake");
+      for (const char of word) {
+        const charElement = document.createElement("span");
+        charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}`;
+        charElement.innerText = char.letter;
+
+        mistake.appendChild(charElement);
+      }
+      background.append(mistake);
+    } else {
+      const text = word.map((char) => char.letter).join("");
+      background.append(text);
+    }
+
+    background.append(" ");
+  }
 }
 
 function clearSentences() {
@@ -488,7 +461,6 @@ function updateHeartBeatInterval() {
   if (heartBeatInterval === undefined) {
     const newInterval = setInterval(() => {
       updateFontGrading();
-      useRandomWords();
     }, 50000 / heartRate);
 
     updateState({
@@ -502,7 +474,6 @@ function updateHeartBeatInterval() {
 
     const newInterval = setInterval(() => {
       updateFontGrading();
-      useRandomWords();
     }, 50000 / heartRate);
 
     updateState({
