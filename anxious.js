@@ -216,13 +216,13 @@ function useSentence(sentence, index) {
   let y = (index * 50) % window.innerHeight;
   const diagonalX = y / Math.tan(angle);
 
-  if (y <= window.innerHeight / 2) {
+  if (window.innerWidth / 2 > diagonalX) {
     x = map(
       Math.round(sentenceSeed) % (window.innerWidth * 0.8),
       0,
       window.innerWidth * 0.8,
-      y,
-      window.innerWidth / 2
+      diagonalX + 300,
+      diagonalX + 350
     );
     sentenceElement.style.maxWidth = `${window.innerWidth - x - 50}px`;
   } else {
@@ -233,15 +233,7 @@ function useSentence(sentence, index) {
       0,
       50
     );
-    sentenceElement.style.maxWidth = `${diagonalX - x - 50}px`;
-  }
-
-  while (Math.abs(diagonalX - x) < 300 || x < 0) {
-    if (y < window.innerHeight / 2) {
-      x += random(sentenceSeed) * 100;
-    } else {
-      x -= random(sentenceSeed) * 100;
-    }
+    sentenceElement.style.maxWidth = `${diagonalX - x - 300}px`;
   }
 
   sentenceElement.style.transform = `translate(${x}px, ${y}px)`;
