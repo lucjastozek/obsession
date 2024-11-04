@@ -1,9 +1,4 @@
 @font-face {
-  font-family: "Decovar";
-  src: url("./DecovarAlpha-VF.ttf");
-}
-
-@font-face {
   font-family: Roboto;
   src: url("./RobotoFlex-VariableFont_GRAD\,XOPQ\,XTRA\,YOPQ\,YTAS\,YTDE\,YTFI\,YTLC\,YTUC\,opsz\,slnt\,wdth\,wght.ttf");
 }
@@ -15,7 +10,6 @@
   --gray: #e3f8ff;
 }
 
-/* Remove the margin in all browsers */
 html,
 body {
   margin: 0;
@@ -23,8 +17,9 @@ body {
   width: 100vw;
   height: 100vh;
   line-height: inherit;
-  font-family: "Roboto", serif;
+  font-family: "Roboto", sans-serif;
   background-color: var(--black);
+  color: var(--white);
   overflow-y: hidden;
   text-align: left;
 }
