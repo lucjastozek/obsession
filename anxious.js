@@ -181,7 +181,7 @@ function useSentence(sentence) {
     sentenceSeed = sentence[0][0].seed;
   }
 
-  const x = Math.round(sentenceSeed) % (window.innerWidth - 50);
+  const x = Math.round(sentenceSeed) % (window.innerWidth * 0.8);
   const y = Math.round(sentenceSeed) % (window.innerHeight - 50);
 
   sentenceElement.style.transform = `translate(${x}px, ${y}px)`;
@@ -448,7 +448,7 @@ function updateBackgroundInterval() {
   if (backgroundInterval === undefined) {
     const newInterval = setInterval(() => {
       useBackgroundWords();
-    }, 50000 / heartRate);
+    }, 25000 / heartRate);
 
     updateState({
       backgroundInterval: newInterval,
