@@ -215,7 +215,7 @@ function useHeading() {
  * @param {Array<Word>} sentence
  */
 function useSentence(sentence) {
-  const { sentencesContainer } = settings;
+  const { sentencesContainer, angle } = settings;
 
   const sentenceElement = document.createElement("p");
   sentenceElement.classList.add("sentence");
@@ -226,8 +226,14 @@ function useSentence(sentence) {
     sentenceSeed = sentence[0][0].seed;
   }
 
-  const x = Math.round(sentenceSeed) % (window.innerWidth * 0.8);
-  const y = Math.round(sentenceSeed) % (window.innerHeight - 50);
+  let x = Math.round(sentenceSeed) % (window.innerWidth * 0.8);
+  let y = Math.round(sentenceSeed) % (window.innerHeight - 50);
+
+  const diagonalX = y / Math.tan(angle);
+
+  while (Math.abs(diagonalX - x) < 300) {
+    x += random(sentenceSeed) * 300 - 100;
+  }
 
   sentenceElement.style.transform = `translate(${x}px, ${y}px)`;
 
@@ -254,7 +260,7 @@ function useSentence(sentence) {
 }
 
 function useRandomWords() {
-  const { randomWordsContainer } = settings;
+  const { randomWordsContainer, angle } = settings;
   const { words } = state;
   const existingRandomWords = document.querySelectorAll(".random-word");
 
@@ -273,7 +279,17 @@ function useRandomWords() {
 
       wordElement.appendChild(charElement);
     }
-    wordElement.style.transform = `translate(${Math.random() * window.innerWidth}px, ${Math.random() * window.innerHeight}px)`;
+
+    let x = Math.random() * window.innerWidth;
+    const y = Math.random() * window.innerHeight;
+
+    const diagonalX = y / Math.tan(angle);
+
+    while (Math.abs(diagonalX - x) < 300) {
+      x += Math.random() * 300 - 100;
+    }
+
+    wordElement.style.transform = `translate(${x}px, ${y}px)`;
 
     randomWordsContainer.appendChild(wordElement);
   }
