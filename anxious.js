@@ -183,8 +183,8 @@ function shake() {
   const { body } = settings;
 
   const shakingValue = anxietyLevel * 0.1;
-  const transformValue = `translate(0, ${Math.random() * shakingValue - shakingValue / 2}px)`;
-  body.style.transform = transformValue;
+
+  body.style.transform = `translate(0, ${Math.random() * shakingValue - shakingValue / 2}px)`;
 }
 
 /**
@@ -225,14 +225,21 @@ function useHeading() {
 
   heading.replaceChildren();
 
+  // add all characters to the heading
   for (const char of headingText) {
     const character = document.createElement("span");
+
+    // apply styling
     character.classList.add("heading-character", "char");
     character.style.backgroundColor = `var(--gray)`;
     character.style.opacity = char.opacity;
     character.style.fontVariationSettings = `'wght' ${char.headingWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}, ${fontSettings}`;
-    character.innerHTML = char.letter;
     character.style.transform = `rotate(${char.rotation}deg)`;
+
+    // add text content
+    character.innerHTML = char.letter;
+
+    // add character to the heading
     heading.appendChild(character);
   }
 
@@ -247,19 +254,24 @@ function useHeading() {
 function useSentence(sentence, index) {
   const { sentencesContainer, angle } = settings;
 
+  // create sentence element
   const sentenceElement = document.createElement("p");
   sentenceElement.classList.add("sentence");
 
+  // get sentence seed
   let sentenceSeed = 1;
 
   if (sentence[0] !== undefined) {
     sentenceSeed = sentence[0][0].seed;
   }
 
+  // get position of the sentence
+
   let x;
   let y = (index * 50) % window.innerHeight;
   const diagonalX = y / Math.tan(angle);
 
+  // get the x position which enables greater width of the sentence
   if (window.innerWidth / 2 > diagonalX) {
     x = map(
       Math.round(sentenceSeed) % (window.innerWidth * 0.8),
@@ -268,6 +280,7 @@ function useSentence(sentence, index) {
       diagonalX + 300,
       diagonalX + 350
     );
+
     sentenceElement.style.maxWidth = `${window.innerWidth - x - 50}px`;
   } else {
     x = map(
@@ -277,22 +290,29 @@ function useSentence(sentence, index) {
       0,
       50
     );
+
     sentenceElement.style.maxWidth = `${diagonalX - x - 300}px`;
   }
 
+  // position element on (x, y) coordinates
   sentenceElement.style.transform = `translate(${x}px, ${y}px)`;
 
+  // add all words to the sentence
   for (const word of sentence) {
     const wordElement = document.createElement("span");
     wordElement.classList.add("word");
 
+    // add all chars to the word
     for (const char of word) {
+      // create a character element
       const charElement = document.createElement("span");
+
+      // apply styling
       charElement.classList.add("char");
-
-      charElement.innerText = char.letter;
-
       charElement.style.fontVariationSettings = `'wght' ${char.sentenceWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}`;
+
+      // add text
+      charElement.innerText = char.letter;
 
       wordElement.append(charElement);
     }
@@ -311,20 +331,28 @@ function useBackgroundWords() {
   const { background } = settings;
   const { sentences } = state;
 
+  // reset the background words if the screen is full
   if (background.offsetHeight > window.innerHeight + 50) {
     background.innerHTML = "";
   }
 
+  // pick word with "mistake"
   const randomSentence = pick(sentences);
   const randomWord = pick(randomSentence);
 
+  // add words to the background
   for (const word of randomSentence) {
+    // check if word is the one with mistake
     if (word === randomWord) {
       const mistake = document.createElement("span");
+
       mistake.classList.add("mistake");
+
       for (const char of word) {
         const charElement = document.createElement("span");
+
         charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}`;
+
         charElement.innerText = char.letter;
 
         mistake.appendChild(charElement);
@@ -332,6 +360,7 @@ function useBackgroundWords() {
       background.append(mistake);
     } else {
       const text = word.map((char) => char.letter).join("");
+
       background.append(text);
     }
 
@@ -347,15 +376,16 @@ function use() {
   const { sentences, heartRate } = state;
   const { sentencesContainer } = settings;
 
-  console.log(heartRate);
-
+  // shake if heartRate is over 130
   if (heartRate > 130) {
     shake();
   }
 
   useHeading();
 
+  // clear sentences
   sentencesContainer.innerHTML = "";
+  // re-print sentences
   sentences.forEach(useSentence);
 
   window.requestAnimationFrame(use);
@@ -369,8 +399,10 @@ function use() {
  */
 function getWeight(minWeight, maxWeight) {
   const { latestActivity } = state;
+  // get time elapsed (in seconds) since the latest activity
   const timeElapsed = (Date.now() - latestActivity) / 1000;
 
+  // returns weight between minWeight and maxWeight
   return minWeight + maxWeight - map(timeElapsed, 0, 1, minWeight, maxWeight);
 }
 
@@ -385,6 +417,7 @@ function isFidgeting() {
   const lastPresses = keyPressesHistory.slice(-5);
   const times = [];
 
+  // get times between the presses
   for (let i = 1; i < lastPresses.length; i++) {
     const time = lastPresses[i] - lastPresses[i - 1];
 
@@ -393,15 +426,15 @@ function isFidgeting() {
 
   const differences = [];
 
+  // get differences between the times
   for (let i = 1; i < times.length; i++) {
     const diff = Math.abs(times[i] - times[i - 1]);
 
     differences.push(diff);
   }
 
+  // get max difference from differences
   const maxDiff = differences.sort((a, b) => b - a)[0];
-
-  console.log(maxDiff);
 
   return maxDiff <= maxFidgetingDifference;
 }
@@ -413,6 +446,7 @@ function updateHeadingFontSize() {
   const { heading, maxWidth } = settings;
   const { fontSize } = state;
 
+  // decrease fontSize if the heading doesn't fit the screen
   if (heading.offsetWidth > maxWidth * 0.8 && fontSize > 0) {
     updateState({ fontSize: fontSize - 1 });
   }
@@ -425,6 +459,7 @@ function updateHeadingFontSize() {
 function updateWords(e) {
   const { words, charCounter } = state;
   const { initialWord } = settings;
+
   if (/^(Enter|Tab| )$/.test(e.key)) {
     // create a new, empty word
     updateState({ words: [...words, [...initialWord]] });
@@ -438,6 +473,7 @@ function updateWords(e) {
       newestWord = [];
     }
 
+    // add new letter to the last word
     newestWord.push({
       letter: e.key,
       opacity: Math.random() * 0.3 + 0.6,
@@ -465,9 +501,12 @@ function updateSentences() {
   let newSentences = [];
 
   newSentences.push([]);
+
+  // get sentences from words
   for (const word of words.slice(1)) {
     newSentences[newSentences.length - 1].push(word);
 
+    // end sentence (= create a new one) if the word ends with period, exclamation or question mark
     if (/[.!?]/.test(word[word.length - 1].letter)) {
       newSentences.push([]);
     }
@@ -485,15 +524,18 @@ function updateFontGrading() {
   const { words, sentences } = state;
 
   /**
+   * Deep copy of words
    * @type {Word[]}
    */
   const updatedWords = JSON.parse(JSON.stringify(words));
 
   /**
+   * Deep copy of sentences
    * @type {Word[][]}
    */
   const updatedSentences = JSON.parse(JSON.stringify(sentences));
 
+  // switch grading of words
   for (const word of updatedWords) {
     for (const char of word) {
       const newGrade = char.grade === -200 ? 150 : -200;
@@ -501,6 +543,7 @@ function updateFontGrading() {
     }
   }
 
+  // switch grading of sentences
   for (const sentence of updatedSentences) {
     for (const word of sentence) {
       for (const char of word) {
@@ -523,6 +566,7 @@ function updateHeartBeatInterval() {
   const { heartBeatInterval, heartRate } = state;
 
   if (heartBeatInterval === undefined) {
+    // create a new interval if it doesn't exist
     const newInterval = setInterval(() => {
       updateFontGrading();
     }, 50000 / heartRate);
@@ -534,8 +578,10 @@ function updateHeartBeatInterval() {
       },
     });
   } else if (heartBeatInterval.heartRate !== heartRate) {
+    // remove previous interval if heartRate changed
     clearInterval(heartBeatInterval.interval);
 
+    // create a new interval with updated heartRate
     const newInterval = setInterval(() => {
       updateFontGrading();
     }, 50000 / heartRate);
@@ -557,6 +603,7 @@ function updateBackgroundInterval() {
   const { heartRate, backgroundInterval } = state;
 
   if (backgroundInterval === undefined) {
+    // create a new interval if it doesn't exist
     const newInterval = setInterval(() => {
       const { anxietyLevel } = state;
       const incrementValue = anxietyLevel > 30 ? 0.1 : 0.5;
@@ -593,10 +640,12 @@ function clearBackgroundInterval() {
 function updateKeyPressesHistory() {
   const { keyPressesHistory, anxietyLevel } = state;
 
+  // add new timestamp to the history
   updateState({
     keyPressesHistory: [...keyPressesHistory, Date.now()],
   });
 
+  // decrease anxietyLevel if the user is fidgeting
   if (isFidgeting()) {
     updateState({
       anxietyLevel: anxietyLevel - 0.1,
@@ -611,10 +660,12 @@ function updateKeyPressesHistory() {
 function setup() {
   const { angle, headingsContainer, initialWord, maxWidth } = settings;
 
+  // initialize words
   updateState({
     words: [[...initialWord]],
   });
 
+  // style headings container so it is positioned on the diagonal of the screen
   headingsContainer.style.transform = `rotate(${angle}rad) translate(0, -50%)`;
   headingsContainer.style.width = maxWidth;
 
