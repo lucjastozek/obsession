@@ -273,7 +273,7 @@ function useBackgroundWords() {
   const { sentences } = state;
 
   if (background.offsetHeight > window.innerHeight + 50) {
-    return;
+    background.innerHTML = "";
   }
 
   const randomSentence = pick(sentences);
@@ -300,16 +300,6 @@ function useBackgroundWords() {
   }
 }
 
-function clearSentences() {
-  const { sentencesContainer } = settings;
-
-  const sentencesElements = document.querySelectorAll(".sentence");
-
-  for (const element of sentencesElements) {
-    sentencesContainer.removeChild(element);
-  }
-}
-
 function shake() {
   const { anxietyLevel } = state;
   const { body } = settings;
@@ -325,6 +315,7 @@ function shake() {
  */
 function use() {
   const { sentences, heartRate } = state;
+  const { sentencesContainer } = settings;
 
   if (heartRate > 130) {
     shake();
@@ -332,7 +323,7 @@ function use() {
 
   useHeading();
 
-  clearSentences();
+  sentencesContainer.innerHTML = "";
   sentences.forEach(useSentence);
 
   window.requestAnimationFrame(use);
