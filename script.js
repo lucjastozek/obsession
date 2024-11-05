@@ -4,6 +4,12 @@
  * ----------------------------------
  * Programming 2024, Interaction Design Bachelor, Malmö University
  *
+ * Try:
+ * - writing a word
+ * - writing whole sentences (end them with ?/!/.)
+ * - not doing anything (wait for the effect!)
+ * - rythmically pressing your keyboard keys
+ *
  * This assignment is written by:
  * Lucja Stozek
  */
