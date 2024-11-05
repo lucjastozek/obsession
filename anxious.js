@@ -40,7 +40,6 @@
  * @property {number} fontSize
  * @property {number} maxWidth
  * @property {number} latestActivity
- * @property {number} startTime
  * @property {number} charCounter
  * @property {number} charsPerSecond
  * @property {number} heartRate
@@ -61,6 +60,7 @@
  * @property {Word} initialWord
  * @property {string} fontSettings
  * @property {number} maxFidgetingDifference
+ * @property {number} startTime
  */
 
 /**
@@ -71,7 +71,6 @@ let state = Object.freeze({
   sentences: [],
   fontSize: 160,
   latestActivity: Date.now(),
-  startTime: Date.now(),
   charCounter: 0,
   charsPerSecond: 0,
   heartRate: 100,
@@ -108,6 +107,7 @@ const settings = Object.freeze({
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
   maxFidgetingDifference: 200,
+  startTime: Date.now(),
 });
 
 /**
@@ -122,7 +122,8 @@ function updateState(newState) {
  * Updates charsPerSecond based on startTime and charCounter
  */
 function updateCharsPerSecond() {
-  const { startTime, charCounter } = state;
+  const { charCounter } = state;
+  const { startTime } = settings;
 
   // get elapsed seconds from startTime to now
   const timeElapsed = (Date.now() - startTime) / 1000;
