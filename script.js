@@ -240,7 +240,6 @@ function useHeading() {
 
     // apply styling
     character.classList.add("heading-character", "char");
-    character.style.backgroundColor = `var(--gray)`;
     character.style.opacity = char.opacity;
     character.style.fontVariationSettings = `'wght' ${char.headingWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}, ${fontSettings}`;
     character.style.transform = `rotate(${char.rotation}deg)`;
