@@ -20,6 +20,7 @@
  * @property {number} rotation
  * @property {number} seed
  * @property {number} grade
+ * @property {number} descender
  */
 
 /**
@@ -102,6 +103,7 @@ const settings = Object.freeze({
       rotation: 0,
       seed: 1,
       grade: 0,
+      descender: -203,
     },
   ],
   fontSettings: "'YTUC' 528, 'YTLC' 570, 'YTAS' 649, 'YTDE' -98",
@@ -309,7 +311,7 @@ function useSentence(sentence, index) {
 
       // apply styling
       charElement.classList.add("char");
-      charElement.style.fontVariationSettings = `'wght' ${char.sentenceWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}`;
+      charElement.style.fontVariationSettings = `'wght' ${char.sentenceWeight}, 'yopq' ${char.thinStroke}, 'GRAD' ${char.grade}, 'YTDE' ${char.descender}`;
 
       // add text
       charElement.innerText = char.letter;
@@ -351,7 +353,7 @@ function useBackgroundWords() {
       for (const char of word) {
         const charElement = document.createElement("span");
 
-        charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}`;
+        charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}, 'YTDE' ${char.descender}`;
 
         charElement.innerText = char.letter;
 
@@ -399,11 +401,12 @@ function use() {
  */
 function getWeight(minWeight, maxWeight) {
   const { latestActivity } = state;
+
   // get time elapsed (in seconds) since the latest activity
   const timeElapsed = (Date.now() - latestActivity) / 1000;
 
-  // returns weight between minWeight and maxWeight
-  return minWeight + maxWeight - map(timeElapsed, 0, 1, minWeight, maxWeight);
+  // returns weight between maxWeight and minWeight
+  return map(timeElapsed, 0, 1, maxWeight, minWeight);
 }
 
 /**
@@ -457,7 +460,7 @@ function updateHeadingFontSize() {
  * @param {KeyboardEvent} e
  */
 function updateWords(e) {
-  const { words, charCounter } = state;
+  const { words, charCounter, anxietyLevel } = state;
   const { initialWord } = settings;
 
   if (/^(Enter|Tab| )$/.test(e.key)) {
@@ -484,6 +487,7 @@ function updateWords(e) {
       rotation: Math.round(Math.random() * 20 - 10),
       seed: Math.random() * 272727,
       grade: 0,
+      descender: map(anxietyLevel, 10, 35, -98, -305),
     });
 
     updateState({
