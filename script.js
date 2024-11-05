@@ -475,7 +475,7 @@ function updateWords(e) {
   if (/^(Enter|Tab| )$/.test(e.key)) {
     // create a new, empty word
     updateState({ words: [...words, [...initialWord]] });
-  } else if (/^[a-zA-Z?!,.;:]$/.test(e.key)) {
+  } else if (e.key.length === 1 && e.key !== " ") {
     // update the newest word
     const wordsCopy = [...words];
     let newestWord = wordsCopy[wordsCopy.length - 1];
@@ -503,6 +503,30 @@ function updateWords(e) {
       words: [...words.slice(0, -1), newestWord],
       charCounter: charCounter + 1,
     });
+  } else if (e.key === "Backspace") {
+    // update the newest word
+    const wordsCopy = [...words];
+    let newestWord = wordsCopy[wordsCopy.length - 1];
+
+    // exit if it's an initial word
+    if (newestWord[0].letter === "") {
+      return;
+    }
+
+    // remove last letter from the newest word
+    newestWord.pop();
+
+    if (newestWord.length === 0) {
+      updateState({
+        words: [...words.slice(0, -1), initialWord],
+        charCounter: charCounter + 1,
+      });
+    } else {
+      updateState({
+        words: [...words.slice(0, -1), newestWord],
+        charCounter: charCounter + 1,
+      });
+    }
   }
 }
 
