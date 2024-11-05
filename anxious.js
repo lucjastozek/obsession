@@ -339,14 +339,16 @@ function useBackgroundWords() {
     background.innerHTML = "";
   }
 
-  // pick word with "mistake"
+  // pick random sentence
   const randomSentence = pick(sentences);
-  const randomWord = pick(randomSentence);
+
+  // pick random mistake in this sentence
+  const randomMistake = pick(randomSentence);
 
   // add words to the background
   for (const word of randomSentence) {
     // check if word is the one with mistake
-    if (word === randomWord) {
+    if (word === randomMistake) {
       const mistake = document.createElement("span");
 
       mistake.classList.add("mistake");
