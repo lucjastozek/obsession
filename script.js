@@ -564,7 +564,7 @@ function updateSentences() {
  * Updates font grading of words (used in the heading) so it simulates heart beat
  */
 function updateFontGrading() {
-  const { words, growing } = state;
+  const { words, sentences, growing } = state;
 
   /**
    * Deep copy of words
@@ -572,10 +572,17 @@ function updateFontGrading() {
    */
   const updatedWords = JSON.parse(JSON.stringify(words));
 
+  /**
+   * Deep copy of sentences
+   * @type {Word[][]}
+   */
+  const updatedSentences = JSON.parse(JSON.stringify(sentences));
+
   // switch grading of words
   for (const word of updatedWords) {
     for (const char of word) {
       let newGrade;
+
       if (growing) {
         newGrade = char.grade + 10;
 
@@ -598,8 +605,31 @@ function updateFontGrading() {
     }
   }
 
+  for (const sentence of updatedSentences) {
+    for (const word of sentence) {
+      for (const char of word) {
+        let newGrade;
+
+        if (growing) {
+          newGrade = char.grade + 10;
+
+          if (newGrade === 150) {
+            updateState({
+              growing: false,
+            });
+          }
+        } else {
+          newGrade = char.grade - 10;
+        }
+
+        char.grade = newGrade;
+      }
+    }
+  }
+
   updateState({
     words: updatedWords,
+    sentences: updatedSentences,
   });
 }
 
