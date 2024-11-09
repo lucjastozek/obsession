@@ -49,11 +49,11 @@
  * @property {number} charCounter
  * @property {number} charsPerSecond
  * @property {number} heartRate
- * @property {ReturnType<typeof setInterval>} backgroundInterval
  * @property {HeartBeatInterval} heartBeatInterval
  * @property {number} anxietyLevel
  * @property {Array.<number>} keyPressesHistory
  * @property {boolean} growing
+ * @property {number} emittedHeartBeats
  */
 
 /**
@@ -86,6 +86,7 @@ let state = Object.freeze({
   anxietyLevel: 10,
   keyPressesHistory: [],
   growing: false,
+  emittedHeartBeats: 0,
 });
 
 /**
@@ -346,6 +347,10 @@ function useBackgroundWords() {
     background.innerHTML = "";
   }
 
+  if (sentences.length === 0) {
+    return;
+  }
+
   // pick random sentence
   const randomSentence = pick(sentences);
 
@@ -604,11 +609,33 @@ function updateFontGrading() {
 function updateHeartBeatInterval() {
   const { heartBeatInterval, heartRate } = state;
 
+  const emitHeartBeat = () => {
+    const { anxietyLevel, emittedHeartBeats, latestActivity } = state;
+
+    updateFontGrading();
+
+    updateState({
+      emittedHeartBeats: emittedHeartBeats + 1,
+    });
+
+    const inactivityTime = Date.now() - latestActivity;
+
+    if (inactivityTime > 3000) {
+      updateState({
+        anxietyLevel: anxietyLevel + 0.1,
+      });
+
+      if (emittedHeartBeats % 3 === 0) {
+        useBackgroundWords();
+      }
+    }
+  };
+
+  const delay = 3000 / heartRate;
+
   if (heartBeatInterval === undefined) {
-    // create a new interval if it doesn't exist
-    const newInterval = setInterval(() => {
-      updateFontGrading();
-    }, heartRate / 6);
+    // create an interval
+    const newInterval = setInterval(emitHeartBeat, delay);
 
     updateState({
       heartBeatInterval: {
@@ -616,14 +643,15 @@ function updateHeartBeatInterval() {
         heartRate: heartRate,
       },
     });
-  } else if (heartBeatInterval.heartRate !== heartRate) {
+  } else if (
+    heartBeatInterval !== undefined &&
+    heartBeatInterval.heartRate !== heartRate
+  ) {
     // remove previous interval if heartRate changed
     clearInterval(heartBeatInterval.interval);
 
     // create a new interval with updated heartRate
-    const newInterval = setInterval(() => {
-      updateFontGrading();
-    }, heartRate / 6);
+    const newInterval = setInterval(emitHeartBeat, delay);
 
     updateState({
       heartBeatInterval: {
@@ -631,44 +659,6 @@ function updateHeartBeatInterval() {
         heartRate: heartRate,
       },
     });
-  }
-}
-
-/**
- * Updates the interval responsible for adding new words to the background.
- * Sets delay based on current heartRate.
- */
-function updateBackgroundInterval() {
-  const { heartRate, backgroundInterval } = state;
-
-  if (backgroundInterval === undefined) {
-    // create a new interval if it doesn't exist
-    const newInterval = setInterval(() => {
-      const { anxietyLevel } = state;
-      const incrementValue = anxietyLevel > 30 ? 0.1 : 0.5;
-
-      updateState({
-        anxietyLevel: anxietyLevel + incrementValue,
-      });
-
-      useBackgroundWords();
-    }, 25000 / heartRate);
-
-    updateState({
-      backgroundInterval: newInterval,
-    });
-  }
-}
-
-/**
- * Performs clean-up of unused background interval
- */
-function clearBackgroundInterval() {
-  const { backgroundInterval } = state;
-
-  if (backgroundInterval !== undefined) {
-    clearInterval(backgroundInterval);
-    updateState({ backgroundInterval: undefined });
   }
 }
 
@@ -687,7 +677,7 @@ function updateKeyPressesHistory() {
   // decrease anxietyLevel if the user is fidgeting
   if (isFidgeting()) {
     updateState({
-      anxietyLevel: anxietyLevel - 0.1,
+      anxietyLevel: anxietyLevel - 0.5,
     });
   }
 }
@@ -711,16 +701,11 @@ function setup() {
   document.addEventListener("keydown", function (event) {
     updateWords(event);
     updateSentences();
-    clearBackgroundInterval();
     updateKeyPressesHistory();
-  });
 
-  document.addEventListener("keyup", function (event) {
     updateState({
       latestActivity: Date.now(),
     });
-
-    updateBackgroundInterval();
   });
 
   update();
