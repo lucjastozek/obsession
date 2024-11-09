@@ -53,6 +53,7 @@
  * @property {HeartBeatInterval} heartBeatInterval
  * @property {number} anxietyLevel
  * @property {Array.<number>} keyPressesHistory
+ * @property {boolean} growing
  */
 
 /**
@@ -84,6 +85,7 @@ let state = Object.freeze({
   heartBeatInterval: undefined,
   anxietyLevel: 10,
   keyPressesHistory: [],
+  growing: false,
 });
 
 /**
@@ -554,10 +556,10 @@ function updateSentences() {
 }
 
 /**
- * Updates font grading so it changes between -200 and 150 with every heart beat
+ * Updates font grading of words (used in the heading) so it simulates heart beat
  */
 function updateFontGrading() {
-  const { words, sentences } = state;
+  const { words, growing } = state;
 
   /**
    * Deep copy of words
@@ -565,32 +567,33 @@ function updateFontGrading() {
    */
   const updatedWords = JSON.parse(JSON.stringify(words));
 
-  /**
-   * Deep copy of sentences
-   * @type {Word[][]}
-   */
-  const updatedSentences = JSON.parse(JSON.stringify(sentences));
-
   // switch grading of words
   for (const word of updatedWords) {
     for (const char of word) {
-      const newGrade = char.grade === -200 ? 150 : -200;
+      let newGrade;
+      if (growing) {
+        newGrade = char.grade + 10;
+
+        if (newGrade === 150) {
+          updateState({
+            growing: false,
+          });
+        }
+      } else {
+        newGrade = char.grade - 10;
+
+        if (newGrade === -200) {
+          updateState({
+            growing: true,
+          });
+        }
+      }
+
       char.grade = newGrade;
     }
   }
 
-  // switch grading of sentences
-  for (const sentence of updatedSentences) {
-    for (const word of sentence) {
-      for (const char of word) {
-        const newGrade = char.grade === -200 ? 150 : -200;
-        char.grade = newGrade;
-      }
-    }
-  }
-
   updateState({
-    sentences: updatedSentences,
     words: updatedWords,
   });
 }
@@ -605,7 +608,7 @@ function updateHeartBeatInterval() {
     // create a new interval if it doesn't exist
     const newInterval = setInterval(() => {
       updateFontGrading();
-    }, 50000 / heartRate);
+    }, heartRate / 6);
 
     updateState({
       heartBeatInterval: {
@@ -620,7 +623,7 @@ function updateHeartBeatInterval() {
     // create a new interval with updated heartRate
     const newInterval = setInterval(() => {
       updateFontGrading();
-    }, 50000 / heartRate);
+    }, heartRate / 6);
 
     updateState({
       heartBeatInterval: {
