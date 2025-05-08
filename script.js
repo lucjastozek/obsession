@@ -158,14 +158,16 @@ function updateHeartRate() {
  * Runs every frame.
  */
 function update() {
-  const { words } = state;
+  const { words, sentences } = state;
 
   updateHeadingFontSize();
   updateCharsPerSecond();
   updateHeartRate();
   updateHeartBeatInterval();
 
-  if (words[0][0].letter !== "") {
+  console.log(heading.textContent);
+
+  if (words[0][0].letter !== "" || sentences.length > 0) {
     const instructions = document.querySelector("#instructions");
     instructions.innerHTML = "";
   }
@@ -647,7 +649,8 @@ function updateHeartBeatInterval() {
   const { heartBeatInterval, heartRate } = state;
 
   const emitHeartBeat = () => {
-    const { anxietyLevel, emittedHeartBeats, latestActivity } = state;
+    const { anxietyLevel, emittedHeartBeats, latestActivity, sentences } =
+      state;
 
     updateFontGrading();
 
@@ -655,15 +658,17 @@ function updateHeartBeatInterval() {
       emittedHeartBeats: emittedHeartBeats + 1,
     });
 
-    const inactivityTime = Date.now() - latestActivity;
+    if (sentences.length > 0) {
+      const inactivityTime = Date.now() - latestActivity;
 
-    if (inactivityTime > 3000) {
-      updateState({
-        anxietyLevel: anxietyLevel + 0.1,
-      });
+      if (inactivityTime > 3000) {
+        updateState({
+          anxietyLevel: anxietyLevel + 0.1,
+        });
 
-      if (emittedHeartBeats % 3 === 0) {
-        useBackgroundWords();
+        if (emittedHeartBeats % 3 === 0) {
+          useBackgroundWords();
+        }
       }
     }
   };
