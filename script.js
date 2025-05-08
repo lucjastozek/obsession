@@ -1,4 +1,13 @@
 "use strict";
+
+const lyrics = `
+Nullam tellus neque, rutrum eu lacus et, gravida consequat enim. Cras magna enim, aliquam vel turpis quis, rutrum rutrum libero. Pellentesque odio metus, fermentum commodo nisi sed, feugiat lobortis lacus. Nulla massa ante, suscipit eget ornare quis, eleifend ac urna. Maecenas sed eros sed est hendrerit volutpat sit amet vel eros. Mauris faucibus malesuada ipsum, lacinia volutpat enim ornare in. Pellentesque commodo metus in massa vehicula, sit amet condimentum est varius. Nulla augue libero, malesuada sit amet ligula ac, imperdiet varius metus. Pellentesque enim mi, venenatis in gravida sed, pretium a turpis. Nulla diam nisl, sollicitudin at erat vel, molestie molestie erat. Donec non augue porttitor, blandit turpis consectetur, efficitur orci. Nam maximus convallis ante, in tempus est pharetra eget. Donec quis molestie risus, vitae consequat metus. Donec dignissim sodales velit sit amet ullamcorper. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.
+Mauris dolor turpis, suscipit finibus tempor nec, sollicitudin ut nulla. Integer tincidunt, urna ac sagittis venenatis, metus mi molestie velit, eu commodo leo neque vitae velit. Vivamus ut nisi nec metus viverra lobortis id sit amet eros. Curabitur nec convallis ex. Integer ornare dui quis nisi dapibus interdum. Donec rhoncus ex eu augue volutpat aliquam. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vulputate venenatis metus, vel consectetur quam placerat et. Sed tincidunt porttitor aliquet. Sed egestas lorem ipsum, in pretium ligula semper sed.
+Mauris mollis tristique sem in porttitor. Integer accumsan ac eros tempor sollicitudin. Etiam lobortis, ante sed fermentum egestas, est nisl semper turpis, id convallis nisi enim et nisl. In fermentum arcu eu ipsum pharetra, vel faucibus lectus viverra. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nunc porta risus quis purus luctus ultrices. Morbi gravida convallis leo.
+Donec blandit, velit id mollis fermentum, elit ipsum efficitur erat, ut vehicula sapien turpis at nunc. Nunc euismod purus a odio dapibus, id porttitor metus pharetra. Sed euismod vulputate dui at gravida. Integer non aliquet massa, eget tristique mi. Nullam sed bibendum metus. Maecenas lobortis ligula ut elit facilisis volutpat. Mauris ut lobortis elit. Proin egestas odio arcu, et cursus ligula porttitor sed. Quisque varius magna nec erat semper pellentesque. Morbi non est dignissim, varius diam vitae, faucibus urna. Interdum et malesuada fames ac ante ipsum primis in faucibus. Etiam gravida aliquam volutpat. Fusce a nibh feugiat, sodales lacus eget, interdum ex. Praesent semper faucibus ante ac malesuada.
+Nulla id ex auctor, faucibus velit fringilla, accumsan dui. In congue, risus sed fringilla pharetra, nibh nulla tristique dolor, sed vehicula lacus lectus eu erat. Fusce tristique lectus quis neque laoreet laoreet. Morbi quis mauris et erat tristique feugiat sit amet ac nibh. Integer aliquam risus felis, ac aliquet sem ullamcorper dignissim. Suspendisse eget tincidunt nunc, et convallis est. Aenean faucibus pharetra felis, id rhoncus magna porta in.
+`;
+
 /*
  * Assignment 3: Functional Prototype
  * ----------------------------------
@@ -270,11 +279,7 @@ function useSentence(sentence, index) {
   sentenceElement.classList.add("sentence");
 
   // get sentence seed
-  let sentenceSeed = 1;
-
-  if (sentence[0] !== undefined) {
-    sentenceSeed = sentence[0][0].seed;
-  }
+  let sentenceSeed = Math.random() * 272727;
 
   // get position of the sentence
 
@@ -342,46 +347,43 @@ function useBackgroundWords() {
   const { background } = settings;
   const { sentences } = state;
 
-  // reset the background words if the screen is full
-  if (background.offsetHeight > window.innerHeight + 50) {
-    background.innerHTML = "";
-  }
-
   if (sentences.length === 0) {
     return;
   }
+  // reset the background words if the screen is full
+  while (background.offsetHeight < window.innerHeight + 50) {
+    // pick random sentence
+    const randomSentence = pick(sentences);
 
-  // pick random sentence
-  const randomSentence = pick(sentences);
+    // pick random mistake in this sentence
+    const randomMistake = pick(randomSentence);
 
-  // pick random mistake in this sentence
-  const randomMistake = pick(randomSentence);
+    // add words to the background
+    for (const word of randomSentence) {
+      // check if word is the one with mistake
+      if (word === randomMistake) {
+        const mistake = document.createElement("span");
 
-  // add words to the background
-  for (const word of randomSentence) {
-    // check if word is the one with mistake
-    if (word === randomMistake) {
-      const mistake = document.createElement("span");
+        mistake.classList.add("mistake");
 
-      mistake.classList.add("mistake");
+        for (const char of word) {
+          const charElement = document.createElement("span");
 
-      for (const char of word) {
-        const charElement = document.createElement("span");
+          charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}, 'YTDE' ${char.descender}`;
 
-        charElement.style.fontVariationSettings = `'wght' ${char.wordWeight}, 'GRAD' ${char.grade}, 'YTDE' ${char.descender}`;
+          charElement.innerText = char.letter;
 
-        charElement.innerText = char.letter;
+          mistake.appendChild(charElement);
+        }
+        background.append(mistake);
+      } else {
+        const text = word.map((char) => char.letter).join("");
 
-        mistake.appendChild(charElement);
+        background.append(text);
       }
-      background.append(mistake);
-    } else {
-      const text = word.map((char) => char.letter).join("");
 
-      background.append(text);
+      background.append(" ");
     }
-
-    background.append(" ");
   }
 }
 
@@ -403,9 +405,13 @@ function use() {
   // clear sentences
   sentencesContainer.innerHTML = "";
   // re-print sentences
-  sentences.forEach(useSentence);
+  sentences
+    .sort(() => Math.random() - 0.5)
+    .filter((word) => word.length >= 8)
+    .slice(0, 32)
+    .forEach(useSentence);
 
-  window.requestAnimationFrame(use);
+  // window.requestAnimationFrame(use);
 }
 
 /**
@@ -550,7 +556,10 @@ function updateSentences() {
     newSentences[newSentences.length - 1].push(word);
 
     // end sentence (= create a new one) if the word ends with period, exclamation or question mark
-    if (/[.!?]/.test(word[word.length - 1].letter)) {
+    if (
+      word[word.length - 1] !== undefined &&
+      /[.!?]/.test(word[word.length - 1].letter)
+    ) {
       newSentences.push([]);
     }
   }
@@ -640,28 +649,11 @@ function updateHeartBeatInterval() {
   const { heartBeatInterval, heartRate } = state;
 
   const emitHeartBeat = () => {
-    const { anxietyLevel, emittedHeartBeats, latestActivity } = state;
-
     updateFontGrading();
-
-    updateState({
-      emittedHeartBeats: emittedHeartBeats + 1,
-    });
-
-    const inactivityTime = Date.now() - latestActivity;
-
-    if (inactivityTime > 3000) {
-      updateState({
-        anxietyLevel: anxietyLevel + 0.1,
-      });
-
-      if (emittedHeartBeats % 3 === 0) {
-        useBackgroundWords();
-      }
-    }
+    useBackgroundWords();
   };
 
-  const delay = 3000 / heartRate;
+  const delay = 1;
 
   if (heartBeatInterval === undefined) {
     // create an interval
@@ -712,6 +704,59 @@ function updateKeyPressesHistory() {
   }
 }
 
+function initializeData() {
+  const lyricsWords = lyrics.split(/\s/);
+  const newWords = [];
+
+  const title = "I'm spiraling!!!";
+
+  const word = [];
+  for (const char of title) {
+    word.push({
+      letter: char,
+      opacity: Math.random() * 0.3 + 0.6,
+      headingWeight: getWeight(800, 1000),
+      sentenceWeight: getWeight(400, 450),
+      wordWeight: getWeight(100, 150),
+      thinStroke: Math.round(Math.random() * 110 + 25),
+      rotation: Math.round(Math.random() * 20 - 10),
+      seed: Math.random() * 272727,
+      grade: map(Math.random(), 0, 1, -200, 250),
+      descender: map(Math.random() * 30, 0, 30, -98, -305),
+    });
+  }
+
+  newWords.push(word);
+
+  for (const word of lyricsWords) {
+    const newWord = [];
+
+    for (const char of word) {
+      if (char.length > 0)
+        newWord.push({
+          letter: char,
+          opacity: Math.random() * 0.3 + 0.6,
+          headingWeight: getWeight(800, 1000),
+          sentenceWeight: getWeight(400, 450),
+          wordWeight: getWeight(100, 150),
+          thinStroke: Math.round(Math.random() * 110 + 25),
+          rotation: Math.round(Math.random() * 20 - 10),
+          seed: Math.random() * 272727,
+          grade: map(Math.random(), 0, 1, -200, 250),
+          descender: map(Math.random() * 30, 0, 30, -98, -305),
+        });
+    }
+
+    newWords.push(newWord);
+  }
+
+  updateState({
+    words: newWords,
+  });
+
+  updateSentences();
+}
+
 /**
  * Sets everything up.
  * Runs once, at the start of the program.
@@ -728,15 +773,17 @@ function setup() {
   headingsContainer.style.transform = `rotate(${angle}rad) translate(0, -50%)`;
   headingsContainer.style.width = maxWidth;
 
-  document.addEventListener("keydown", function (event) {
-    updateWords(event);
-    updateSentences();
-    updateKeyPressesHistory();
+  initializeData();
 
-    updateState({
-      latestActivity: Date.now(),
-    });
-  });
+  // document.addEventListener("keydown", function (event) {
+  //   updateWords(event);
+  //   updateSentences();
+  //   updateKeyPressesHistory();
+
+  //   updateState({
+  //     latestActivity: Date.now(),
+  //   });
+  // });
 
   update();
   use();
