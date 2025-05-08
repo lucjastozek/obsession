@@ -158,10 +158,17 @@ function updateHeartRate() {
  * Runs every frame.
  */
 function update() {
+  const { words } = state;
+
   updateHeadingFontSize();
   updateCharsPerSecond();
   updateHeartRate();
   updateHeartBeatInterval();
+
+  if (words[0][0].letter !== "") {
+    const instructions = document.querySelector("#instructions");
+    instructions.innerHTML = "";
+  }
 
   window.requestAnimationFrame(update);
 }

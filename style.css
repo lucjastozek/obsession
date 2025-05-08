@@ -89,3 +89,18 @@ body {
   opacity: 60%;
   text-decoration-color: var(--red);
 }
+
+#instructions-container {
+  position: absolute;
+  display: flex;
+  height: 100dvh;
+  width: 100dvw;
+  align-items: center;
+  justify-content: center;
+}
+
+#instructions {
+  font-size: 4rem;
+  font-family: Roboto;
+  font-weight: 400;
+}
